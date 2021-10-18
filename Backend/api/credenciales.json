@@ -1,0 +1,9 @@
+{
+  "host":"localhost",
+  "database":"vynils",
+  "user":"postgres",
+  "password":"postgres",
+  "port":5432
+}
+
+
