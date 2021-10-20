@@ -1,6 +1,29 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# -----------------------------------------------------------------------------
+
+"""Definición de la función que obtiene los archivos a procesar."""
+
+# -----------------------------------------------------------------------------
+
+import os, json
 import psycopg2
-import os, sys, json
+
+# -----------------------------------------------------------------------------
+
+# creditos
+__author__ = "José López"
+__review__ = "Santiago Alejandro Salinas Vargas"
+__copyright__ = "Grupo 14"
+__credits__ = ["Grupo 14"]
+__license__ = "GPLv3"
+__version__ = "1.0.0"
+__email__ = "s.salinas@uniandes.edu.co"
+__status__ = "Dev"
+__date__ = "2021-10-19 10:24"
+
+# -----------------------------------------------------------------------------
 
 def conectar():
     conexion = None
