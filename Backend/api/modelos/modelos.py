@@ -66,7 +66,7 @@ class Tarea(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     archivo = db.Column(db.String(512), nullable=False)
     formato = db.Column(db.Enum(Formato), nullable=False)
-    fecha = db.Column(db.Datetime, default=datetime.today())
+    fecha = db.Column(db.DateTime, default=datetime.today())
     estado = db.Column(db.Enum(Estado), default="UPLOADED", nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"),
         nullable=False)
