@@ -1,8 +1,8 @@
 {
   "host":"localhost",
   "database":"vynils",
-  "user":"postgres",
-  "password":"postgres",
+  "user":"nube",
+  "password":"Grupo14",
   "port":5432
 }
 
