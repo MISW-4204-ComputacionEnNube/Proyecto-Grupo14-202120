@@ -46,12 +46,23 @@ class VistaTareas(Resource):
     """"""
 
     def post(self):
-        """Se crea una nueva tarea."""
+        """Se crea una nueva tarea.
+        
+        Esta funcion se llama usnado CURL desde la linea de comandos así:
+        curl -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}" 
+             -F "file=@/home/estudiante/music/tina-guo.mp3;type=audio/mpeg"  
+             -F "destino=wav" 
+             -F "usuario_id=1" http://localhost:5000/api/tasks
+        """
+
 
         # obtiene el archivo enviado
         f = request.files['file']
         # obtiene el tipo de archivo al que se transformará
         extension_destino = request.form['destino']
+        # obtiene el identificador del usuario
+        usuario_id = request.form["usuario_id"]
 
         if f is None:
             # no se envio el archivo, por ende no se crea la tarea
@@ -62,6 +73,12 @@ class VistaTareas(Resource):
         if extension_destino is None:
             # no se envio la extensión de destino, por ende no se crea la tarea
             msg = "No se definió la extensión de destino"
+            flash(msg)
+            return msg, 402
+
+        if usuario_id is None:
+            # no se envio la extensión de destino, por ende no se crea la tarea
+            msg = "No se reportó el id del usuario"
             flash(msg)
             return msg, 402
 
@@ -107,19 +124,18 @@ class VistaTareas(Resource):
         archivo_destino = f"{tfecha}_{base_archivo}.{extension_destino}".\
             replace(' ', '_')
 
-        try:
-            # almacena el archivo
-            f.save(archivo_origen)
-        except:
-            msg = "Error al almacenar el archivo"
-            flash(msg)
-            return msg, 402
-
         # construye la ruta donde se almacenó el archivo
         ruta_archivo_origen = f"{ruta}/{archivo_origen}"
         # construye la ruta donde se almacenará el archivo transformado
         ruta_archivo_destino = f"{ruta}/{archivo_destino}"
 
+        try:
+            # almacena el archivo
+            f.save(ruta_archivo_origen)
+        except:
+            msg = "Error al almacenar el archivo"
+            flash(msg)
+            return msg, 402
 
         # crea el registro en la base de datos
         nueva_tarea = Tarea(
@@ -130,7 +146,7 @@ class VistaTareas(Resource):
             ruta_archivo_destino = ruta_archivo_destino,
             fecha = fecha,
             estado = 'uploaded',
-            usuario_id = request.form["usuario_id"])
+            usuario_id = usuario_id)
 
         db.session.add(nueva_tarea)
         db.session.commit()
