@@ -130,7 +130,7 @@ class VistaTareas(Resource):
             ruta_archivo_destino = ruta_archivo_destino,
             fecha = fecha,
             estado = 'uploaded',
-            usuario_id = request.json["usuario_id"])
+            usuario_id = request.form["usuario_id"])
 
         db.session.add(nueva_tarea)
         db.session.commit()
