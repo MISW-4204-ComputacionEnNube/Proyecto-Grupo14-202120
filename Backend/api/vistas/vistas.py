@@ -252,16 +252,20 @@ class VistaSignUp(Resource):
     def post(self):
         """Crea un nuevo usuario."""
 
+
         nuevo_usuario = Usuario(usuario=request.json["usuario"],
             email=request.json["email"],
             contrasena=request.json["contrasena"])
 
-        db.session.add(nuevo_usuario)
-        db.session.commit()
+        """Constata que haya digitado bien la contraseña."""
 
-        token_de_acceso = create_access_token(identity = nuevo_usuario.id)
-
-        return {"mensaje":"usuario creado exitosamente", "token":token_de_acceso}
+        if request.json["contrasena"] == request.json["verificar"]:
+            db.session.add(nuevo_usuario)
+            db.session.commit()
+            token_de_acceso = create_access_token(identity = nuevo_usuario.id)
+            return {"mensaje":"usuario creado exitosamente", "token":token_de_acceso}, 200
+        else:
+            return {"mensaje":"las contraseñas no coinciden, favor verificar"}, 400
 
     def put(self, id_usuario):
         """Cambia la contraseha."""
