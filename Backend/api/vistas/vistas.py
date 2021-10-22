@@ -7,13 +7,14 @@
 
 # ----------------------------------------------------------------------------
 
-from flask import request
+from flask import request, flash
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token, \
     get_jwt_identity
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from operator import contains
+from werkzeug.utils import secure_filename
 
 from ..tareas import registrar_log
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
@@ -54,14 +55,16 @@ class VistaTareas(Resource):
 
         if f is None:
             # no se envio el archivo, por ende no se crea la tarea
-            return "No se cargo el archivo", 402        
+            flash("No se cargo el archivo")
+            return  402        
 
         if extension_destino is None:
             # no se envio la extensión de destino, por ende no se crea la tarea
-            return "No se definió la extensión de destino", 402        
+            flash("No se definió la extensión de destino")
+            return 402        
 
         # obtiene el nombre del archivo
-        archivo = f.filename
+        archivo = secure_filename(f.filename)
         # obtiene la extensión del archivo en minúscula
         extension_origen = archivo.split('.')[-1].lower()
         # obtiene la base del nombre del archivo
@@ -72,17 +75,20 @@ class VistaTareas(Resource):
         # valida que el nombre de archivo tenga base
         if len(base_archivo) == 0:
             # nombre de archivo sin base
-            return "Nombre de archivo sin base", 402
+            flash("Nombre de archivo sin base")
+            return 402
 
         # valida la extensión del archivo de origen
         if extension_origen in formatos:
             # el formato del archivo no es admitido
-            return "El formato del archivo no es admitido", 402
+            flash("El formato del archivo no es admitido")
+            return 402
 
         # valida la extensión de destino
         if extension_destino in formatos:
             # el formato de destino no es admitido
-            return "El formato de destino no es admitido", 402
+            flash("El formato de destino no es admitido")
+            return 402
 
         # obtiene la fecha actual
         fecha = datetime.now()
@@ -100,7 +106,8 @@ class VistaTareas(Resource):
             # almacena el archivo
             f.save(archivo_origen)
         except:
-            return "Error al almacenar el archivo", 402
+            flash("Error al almacenar el archivo")
+            return 402
 
         # construye la ruta donde se almacenó el archivo
         ruta_archivo_origen = f"{ruta}/{archivo_origen}"
