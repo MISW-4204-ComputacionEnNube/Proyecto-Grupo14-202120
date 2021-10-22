@@ -3,7 +3,7 @@
 
 # ----------------------------------------------------------------------------
 
-"""Definición de la función que se ejecuta al inicio de la aplicación."""
+"""Definicion de la funcion que se ejecuta al inicio de la aplicacion."""
 
 # ----------------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
 # ----------------------------------------------------------------------------
 
 # creditos
-__author__ = "José López"
+__author__ = "Jose Lopez"
 __review__ = "Santiago Alejandro Salinas Vargas"
 __copyright__ = "Grupo 14"
 __credits__ = ["Grupo 14"]
@@ -48,7 +48,7 @@ class VistaTareas(Resource):
     def post(self):
         """Se crea una nueva tarea.
         
-        Esta funcion se llama usnado CURL desde la linea de comandos así:
+        Esta funcion se llama usnado CURL desde la linea de comandos asi:
         curl -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer {..token..}" 
              -F "file=@/home/estudiante/music/tina-guo.mp3;type=audio/mpeg"  
@@ -66,12 +66,12 @@ class VistaTareas(Resource):
             flash(msg)
             return msg, 402
 
-        # obtiene el tipo de archivo al que se transformará
+        # obtiene el tipo de archivo al que se transformara
         try:
             extension_destino = request.form['destino']
         except:
-            # no se envio la extensión de destino, por ende no se crea la tarea
-            msg = "No se definió la extensión de destino"
+            # no se envio la extension de destino, por ende no se crea la tarea
+            msg = "No se definio la extension de destino"
             flash(msg)
             return msg, 402
 
@@ -79,8 +79,8 @@ class VistaTareas(Resource):
         try:
             usuario_id = request.form["usuario_id"]
         except:
-            # no se envio la extensión de destino, por ende no se crea la tarea
-            msg = "No se reportó el id del usuario"
+            # no se envio la extension de destino, por ende no se crea la tarea
+            msg = "No se reporto el id del usuario"
             flash(msg)
             return msg, 402
 
@@ -91,24 +91,24 @@ class VistaTareas(Resource):
             return msg, 402
 
         if extension_destino is None:
-            # no se envio la extensión de destino, por ende no se crea la tarea
-            msg = "No se definió la extensión de destino"
+            # no se envio la extension de destino, por ende no se crea la tarea
+            msg = "No se definio la extension de destino"
             flash(msg)
             return msg, 402
 
         if usuario_id is None:
-            # no se envio la extensión de destino, por ende no se crea la tarea
-            msg = "No se reportó el id del usuario"
+            # no se envio la extension de destino, por ende no se crea la tarea
+            msg = "No se reporto el id del usuario"
             flash(msg)
             return msg, 402
 
         # obtiene el nombre del archivo
         archivo = secure_filename(f.filename)
-        # obtiene la extensión del archivo en minúscula
+        # obtiene la extension del archivo en minuscula
         extension_origen = archivo.split('.')[-1].lower()
         # obtiene la base del nombre del archivo
         base_archivo = archivo[:(len(archivo)-len(extension_origen)-1)]
-        # pasa la extensión de destino a minúscula
+        # pasa la extension de destino a minuscula
         extension_destino = extension_destino.lower()
 
         # valida que el nombre de archivo tenga base
@@ -118,14 +118,14 @@ class VistaTareas(Resource):
             flash(msg)
             return msg, 402
 
-        # valida la extensión del archivo de origen
+        # valida la extension del archivo de origen
         if extension_origen not in formatos:
             # el formato del archivo no es admitido
             msg = "El formato del archivo no es admitido"
             flash(msg)
             return msg, 402
 
-        # valida la extensión de destino
+        # valida la extension de destino
         if extension_destino not in formatos:
             # el formato de destino no es admitido
             msg = "El formato de destino no es admitido"
@@ -136,17 +136,17 @@ class VistaTareas(Resource):
         fecha = datetime.now()
         tfecha = fecha.strftime('%Y%m%d%H%M%S')
 
-        # genera el nombre del archivo con el que se almacenará el archivo
+        # genera el nombre del archivo con el que se almacenara el archivo
         archivo_origen = f"{tfecha}_{archivo}".replace(' ', '_')
 
-        # genera el nombre del archivo con el que se almacenará el archivo 
+        # genera el nombre del archivo con el que se almacenara el archivo 
         # transformado
         archivo_destino = f"{tfecha}_{base_archivo}.{extension_destino}".\
             replace(' ', '_')
 
-        # construye la ruta donde se almacenó el archivo
+        # construye la ruta donde se almaceno el archivo
         ruta_archivo_origen = f"{ruta}/{archivo_origen}"
-        # construye la ruta donde se almacenará el archivo transformado
+        # construye la ruta donde se almacenara el archivo transformado
         ruta_archivo_destino = f"{ruta}/{archivo_destino}"
 
         try:
@@ -234,7 +234,7 @@ class VistaSignUp(Resource):
         return {"mensaje":"usuario creado exitosamente", "token":token_de_acceso}
 
     def put(self, id_usuario):
-        """Cambia la contraseña."""
+        """Cambia la contraseha."""
 
         usuario = Usuario.query.get_or_404(id_usuario)
 
@@ -264,7 +264,7 @@ class VistaLogIn(Resource):
     """"""
 
     def post(self):
-        """Inicio de sesión."""
+        """Inicio de sesion."""
 
         usuario = Usuario.query.filter(Usuario.usuario == request.json["usuario"], 
             Usuario.contrasena == request.json["contrasena"]).first()
@@ -276,7 +276,7 @@ class VistaLogIn(Resource):
 
         else:
             token_de_acceso = create_access_token(identity = usuario.id)
-            return {"mensaje":"Inicio de sesión exitoso", "token": token_de_acceso}
+            return {"mensaje":"Inicio de sesion exitoso", "token": token_de_acceso}
 
 
 # end point: /api/files/<string:filename>
