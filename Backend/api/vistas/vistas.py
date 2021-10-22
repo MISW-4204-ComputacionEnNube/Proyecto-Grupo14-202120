@@ -18,6 +18,7 @@ from werkzeug.utils import secure_filename
 
 from ..tareas import registrar_log
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
+from ..tareas.convert import CronConvert
 
 # ----------------------------------------------------------------------------
 
@@ -183,6 +184,23 @@ class VistaTareas(Resource):
         """
 
         return [tarea_schema.dump(ta) for ta in Tarea.query.all()]
+
+
+# end point: /api/run_tasks
+class VistaEjecutarTareas(Resource):
+    """"""
+
+    def post(self):
+        """Se dispara la tarea de conversion.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}" 
+             http://localhost:5000/api/run_tasks
+        """
+
+        return CronConvert()
 
 
 # end point: /api/tasks/<int:id_task>
