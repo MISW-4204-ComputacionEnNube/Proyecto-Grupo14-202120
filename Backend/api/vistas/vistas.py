@@ -58,11 +58,31 @@ class VistaTareas(Resource):
 
 
         # obtiene el archivo enviado
-        f = request.files['file']
+        try:
+            f = request.files['file']
+        except:
+            # no se envio el archivo, por ende no se crea la tarea
+            msg = "No se cargo el archivo"
+            flash(msg)
+            return msg, 402
+
         # obtiene el tipo de archivo al que se transformará
-        extension_destino = request.form['destino']
+        try:
+            extension_destino = request.form['destino']
+        except:
+            # no se envio la extensión de destino, por ende no se crea la tarea
+            msg = "No se definió la extensión de destino"
+            flash(msg)
+            return msg, 402
+
         # obtiene el identificador del usuario
-        usuario_id = request.form["usuario_id"]
+        try:
+            usuario_id = request.form["usuario_id"]
+        except:
+            # no se envio la extensión de destino, por ende no se crea la tarea
+            msg = "No se reportó el id del usuario"
+            flash(msg)
+            return msg, 402
 
         if f is None:
             # no se envio el archivo, por ende no se crea la tarea
