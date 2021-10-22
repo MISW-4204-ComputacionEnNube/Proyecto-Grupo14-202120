@@ -30,21 +30,6 @@ __date__ = "2021-10-19 10:24"
 
 db = SQLAlchemy()
 
-class Formato(enum.Enum):
-    """Enumeración con los formatos de audio soportados."""
-
-    MP3 = 1
-    ACC = 2
-    OGG = 3
-    WAV = 4
-    WMA = 5
-
-
-class Estado(enum.Enum):
-    """Enumeración con los estados de las tareas."""
-
-    UPLOADED = 1
-
 
 class Usuario(db.Model):
     """Modelo de los usuarios."""
@@ -59,15 +44,17 @@ class Usuario(db.Model):
         return f'<User {self.usuario}>'
 
 
-
 class Tarea(db.Model):
     """Modelo de las tareas a ejecutar."""
 
     id = db.Column(db.Integer, primary_key=True)
     archivo = db.Column(db.String(512), nullable=False)
-    formato = db.Column(db.Enum(Formato), nullable=False)
+    formato_origen = db.Column(db.String(3), nullable=False)
+    ruta_archivo_origen = db.Column(db.String(1024), nullable=False)
+    formato_destino = db.Column(db.String(3), nullable=False)
+    ruta_archivo_destino = db.Column(db.String(1024), nullable=False)
     fecha = db.Column(db.DateTime, default=datetime.today())
-    estado = db.Column(db.Enum(Estado), default="UPLOADED", nullable=False)
+    estado = db.Column(db.String(16), nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"),
         nullable=False)
     usuario = db.relationship('Usuario',
