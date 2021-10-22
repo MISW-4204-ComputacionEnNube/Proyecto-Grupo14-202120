@@ -51,17 +51,19 @@ class VistaTareas(Resource):
         # obtiene el archivo enviado
         f = request.files['file']
         # obtiene el tipo de archivo al que se transformará
-        extension_destino = request.json['destino']
+        extension_destino = request.form['destino']
 
         if f is None:
             # no se envio el archivo, por ende no se crea la tarea
-            flash("No se cargo el archivo")
-            return  402        
+            msg = "No se cargo el archivo"
+            flash(msg)
+            return msg, 402
 
         if extension_destino is None:
             # no se envio la extensión de destino, por ende no se crea la tarea
-            flash("No se definió la extensión de destino")
-            return 402        
+            msg = "No se definió la extensión de destino"
+            flash(msg)
+            return msg, 402
 
         # obtiene el nombre del archivo
         archivo = secure_filename(f.filename)
@@ -75,20 +77,23 @@ class VistaTareas(Resource):
         # valida que el nombre de archivo tenga base
         if len(base_archivo) == 0:
             # nombre de archivo sin base
-            flash("Nombre de archivo sin base")
-            return 402
+            msg = "Nombre de archivo sin base"
+            flash(msg)
+            return msg, 402
 
         # valida la extensión del archivo de origen
         if extension_origen in formatos:
             # el formato del archivo no es admitido
-            flash("El formato del archivo no es admitido")
-            return 402
+            msg = "El formato del archivo no es admitido"
+            flash(msg)
+            return msg, 402
 
         # valida la extensión de destino
         if extension_destino in formatos:
             # el formato de destino no es admitido
-            flash("El formato de destino no es admitido")
-            return 402
+            msg = "El formato de destino no es admitido"
+            flash(msg)
+            return msg, 402
 
         # obtiene la fecha actual
         fecha = datetime.now()
@@ -106,8 +111,9 @@ class VistaTareas(Resource):
             # almacena el archivo
             f.save(archivo_origen)
         except:
-            flash("Error al almacenar el archivo")
-            return 402
+            msg = "Error al almacenar el archivo"
+            flash(msg)
+            return msg, 402
 
         # construye la ruta donde se almacenó el archivo
         ruta_archivo_origen = f"{ruta}/{archivo_origen}"
