@@ -38,7 +38,7 @@ __date__ = "2021-10-19 15:46"
 usuario_schema = UsuarioSchema()
 tarea_schema = TareaSchema()
 ruta = "/home/estudiante/Proyecto-Grupo14-202120/Backend/files"
-formatos = ['acc', 'mp3', 'ogg', 'wav', 'wma']
+formatos = ['aac', 'mp3', 'ogg', 'wav', 'wma']
 
 
 # end point: /api/tasks
