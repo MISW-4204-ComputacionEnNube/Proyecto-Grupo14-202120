@@ -48,7 +48,7 @@ class VistaTareas(Resource):
     def post(self):
         """Se crea una nueva tarea.
         
-        Esta funcion se llama usnado CURL desde la linea de comandos asi:
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer {..token..}" 
              -F "file=@/home/estudiante/music/tina-guo.mp3;type=audio/mpeg"  
@@ -174,7 +174,13 @@ class VistaTareas(Resource):
         return tarea_schema.dump(nueva_tarea)
 
     def get(self):
-        """Retorna todas las tareas."""
+        """Retorna todas las tareas.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X GET -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}" 
+             http://localhost:5000/api/tasks
+        """
 
         return [tarea_schema.dump(ta) for ta in Tarea.query.all()]
 
@@ -184,35 +190,41 @@ class VistaTarea(Resource):
     """"""
 
     def get(self, id_task):
-        """Se obtiene una tarea con base en el id."""
+        """Se obtiene una tarea con base en el id.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X GET -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}" 
+             http://localhost:5000/api/tasks/1
+        """
 
         return tarea_schema.dump(Tarea.query.get_or_404(id_task))
 
-    def put(self, id_task):
-        """Se actualiza el archivo."""
-
-        tarea = Tarea.query.get_or_404(id_task)
-
-        if Tarea.query.filter(Tarea.id==id_task).exists():
-            tarea.archivo = request.json.get("archivo", tarea.archivo)
-            db.session.commit()
-            return tarea_schema.dump(tarea)
-        
-        else:
-            return tarea
 
     def delete(self, id_task):
-        """Se elimina el archivo."""
+        """Se elimina el archivo.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X DELETE -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}" 
+             http://localhost:5000/api/tasks/1
+        """
 
         tarea = Tarea.query.get_or_404(id_task)
 
         if Tarea.query.filter(Tarea.id==id_task).exists():
+
             db.session.delete(tarea)
             db.session.commit()
-            return {"mensaje":"La tarea fue eliminada"}, 204
+
+            msg = "La tarea fue eliminada"
+            flash(msg)
+            return msg, 204
 
         else:
-            return {"mensaje":"No existe la tarea a eliminar"}, 404
+            msg = "No existe la tarea a eliminar"
+            flash(msg)
+            return msg, 402
 
 
 # end point: /api/auth/signup
