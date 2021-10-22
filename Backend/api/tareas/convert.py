@@ -49,8 +49,8 @@ def CronConvert() ->str:
                 task.formato_origen, " -> ", task.formato_destino)
 
             # ejecuta un subproceso que hace la conversión
-            subprocess.call(['ffmpeg', '-i', Tarea.ruta_archivo_origen,
-                Tarea.ruta_archivo_destino])
+            subprocess.call(['ffmpeg', '-i', task.ruta_archivo_origen,
+                task.ruta_archivo_destino])
 
             task.estado = "processed"
             db.session.commit()
