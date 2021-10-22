@@ -16,7 +16,7 @@ from datetime import datetime
 from operator import contains
 
 from ..tareas import registrar_log
-from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema, Formato
+from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
 
 # ----------------------------------------------------------------------------
 
