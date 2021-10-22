@@ -210,10 +210,10 @@ class VistaTarea(Resource):
              http://localhost:5000/api/tasks/1
         """
 
-        tarea = Tarea.query.get_or_404(id_task)
 
-        if Tarea.query.filter(Tarea.id==id_task).exists():
+        if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).scalar():
 
+            tarea = Tarea.query.get(id_task)
             db.session.delete(tarea)
             db.session.commit()
 
