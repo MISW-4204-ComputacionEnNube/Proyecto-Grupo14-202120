@@ -9,10 +9,12 @@
 
 from api import create_app
 from flask_restful import Api
-from .modelos import db
-from .vistas import VistaSignUp, VistaTarea, VistaTareas, VistaUsuariosTarea, VistaLogIn
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+
+from .modelos import db
+from .vistas import VistaSignUp, VistaTarea, VistaTareas, \
+    VistaUsuariosTarea, VistaLogIn, VistaEjecutarTareas
 
 # ----------------------------------------------------------------------------
 
@@ -40,6 +42,7 @@ db.create_all()
 cors = CORS(app)
 
 api = Api(app)
+api.add_resource(VistaEjecutarTareas, '/api/run_tasks')
 api.add_resource(VistaTareas, '/api/tasks')
 api.add_resource(VistaTarea, '/api/tasks/<int:id_task>')
 api.add_resource(VistaSignUp, '/api/auth/signup')
