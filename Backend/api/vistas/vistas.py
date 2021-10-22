@@ -70,7 +70,7 @@ class VistaTareas(Resource):
         # obtiene la extensión del archivo en minúscula
         extension_origen = archivo.split('.')[-1].lower()
         # obtiene la base del nombre del archivo
-        base_archivo = archivo[:(len(archivo)-len(extension_origen))]
+        base_archivo = archivo[:(len(archivo)-len(extension_origen)-1)]
         # pasa la extensión de destino a minúscula
         extension_destino = extension_destino.lower()
 
@@ -82,14 +82,14 @@ class VistaTareas(Resource):
             return msg, 402
 
         # valida la extensión del archivo de origen
-        if extension_origen in formatos:
+        if extension_origen not in formatos:
             # el formato del archivo no es admitido
             msg = "El formato del archivo no es admitido"
             flash(msg)
             return msg, 402
 
         # valida la extensión de destino
-        if extension_destino in formatos:
+        if extension_destino not in formatos:
             # el formato de destino no es admitido
             msg = "El formato de destino no es admitido"
             flash(msg)
