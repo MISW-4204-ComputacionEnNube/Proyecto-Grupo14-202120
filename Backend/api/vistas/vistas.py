@@ -16,6 +16,7 @@ from datetime import datetime
 from operator import contains
 from werkzeug.utils import secure_filename
 from email_validator import validate_email, EmailNotValidError
+from password_strength import PasswordPolicy
 
 from ..tareas import registrar_log
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
@@ -64,6 +65,43 @@ def ValidarEmail(email: str) -> tuple:
         return -1, "Email vacio" 
 
 
+
+# ----------------------------------------------------------------------------
+
+
+def ValidarPassword(password1: str, password2: str) -> tuple:
+    """Funcion que valida el password."""
+
+    # valida los passwords
+    if password1 is None:
+        return -1, "Error password1 inexistente"
+    if password1 is None:
+        return -2, "Error password2 inexistente"
+    if password1 != password2:
+        return -3, "Error de validación en comparación del password"
+
+    # define la complejidad mínima del password
+    policy = PasswordPolicy.from_names(
+        length=8,  # min length: 8
+        uppercase=2,  # need min. 2 uppercase letters
+        numbers=2,  # need min. 2 digits
+        special=2,  # need min. 2 special characters
+        nonletters=2,  # need min. 2 non-letter characters 
+                       # (digits, specials, anything)
+    )
+
+    # evalua la calidad del password
+    result = policy.test(password1)
+    if len(result) > 0:
+        # tiene errores de validación el password
+        return -4, f"El password tiene {len(result)} errores de " + \
+                   f"validación en complejidad : {str(result)}. " + \
+                   f"Debe tener mínimo: 8 carácteres, 2 mayúsculas, " + \
+                   f"2 dígitos, 2 carácteres especiales."
+    
+    return 0, password1
+
+
 # ----------------------------------------------------------------------------
 
 
@@ -84,10 +122,15 @@ class VistaSignUp(Resource):
         if err != 0:
             return {"mensaje": f"Error en el email : {email}"}
 
+        # valida el password
+        err, password = ValidarPassword(password1, password2)
+        if err != 0:
+            return {"mensaje": f"Error en el password : {password}"}
+
 
         nuevo_usuario = Usuario(usuario=usuario,
             email=email,
-            contrasena=password1)
+            contrasena=password)
 
         db.session.add(nuevo_usuario)
         db.session.commit()
