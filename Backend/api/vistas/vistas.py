@@ -15,6 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from operator import contains
 from werkzeug.utils import secure_filename
+from email_validator import validate_email, EmailNotValidError
 
 from ..tareas import registrar_log
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
@@ -40,6 +41,88 @@ usuario_schema = UsuarioSchema()
 tarea_schema = TareaSchema()
 ruta = "/home/estudiante/Proyecto-Grupo14-202120/Backend/files"
 formatos = ['aac', 'mp3', 'ogg', 'wav', 'wma']
+
+
+# ----------------------------------------------------------------------------
+
+
+def ValidarEmail(email: str) -> tuple:
+    """Funcion que valida el email."""
+
+    if email not in None:
+        try:
+            # Valida el email
+            valid = validate_email(email)
+            # Obtiene el valor normalizado del email.
+            email = valid.email
+            return 0, email
+        except EmailNotValidError as e:
+            # email no es vlaido
+            return -2, str(e)
+
+    else:
+        return -1, "Email vacio" 
+
+
+# ----------------------------------------------------------------------------
+
+
+# end point: /api/auth/signup
+class VistaSignUp(Resource):
+    """"""
+
+    def post(self):
+        """Crea un nuevo usuario."""
+
+        usuario = request.json["usuario"]
+        email = request.json["email"]
+        password1 = request.json["password1"]
+        password2 = request.json["password2"]
+        
+        # valida el email
+        err, email = ValidarEmail(email)
+        if err != 0:
+            return {"mensaje": f"Error en el email : {email}"}
+
+
+        nuevo_usuario = Usuario(usuario=usuario,
+            email=email,
+            contrasena=password1)
+
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+
+        token_de_acceso = create_access_token(identity = nuevo_usuario.id)
+
+        return {"mensaje":"usuario creado exitosamente", "token":token_de_acceso}
+
+    def put(self, id_usuario):
+        """Cambia la contraseha."""
+
+        usuario = Usuario.query.get_or_404(id_usuario)
+
+        if Usuario.query.filter(Usuario.id==id_usuario).exists():
+            usuario.contrasena = request.json.get("contrasena",usuario.contrasena)
+            db.session.commit()
+            return usuario_schema.dump(usuario)
+        else:
+            return usuario
+
+    def delete(self, id_usuario):
+        """Elimina el usuario."""
+
+        usuario = Usuario.query.get_or_404(id_usuario)
+
+        if Usuario.query.filter(Usuario.id==id_usuario).exists():
+            db.session.delete(usuario)
+            db.session.commit()
+            return {"mensaje":"El usuario fue eliminado"}, 204
+
+        else:
+            return {"mensaje":"No existe el usuario a eliminar"}, 404
+
+
+# ----------------------------------------------------------------------------
 
 
 # end point: /api/tasks
@@ -195,7 +278,7 @@ class VistaEjecutarTareas(Resource):
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         Esta funcion se llama usando CURL desde la linea de comandos asi:
-        curl -H "Content-Type: multipart/form-data" 
+        curl -X POST -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer {..token..}" 
              http://localhost:5000/api/run_tasks
         """
@@ -244,49 +327,6 @@ class VistaTarea(Resource):
             flash(msg)
             return msg, 402
 
-
-# end point: /api/auth/signup
-class VistaSignUp(Resource):
-    """"""
-
-    def post(self):
-        """Crea un nuevo usuario."""
-
-        nuevo_usuario = Usuario(usuario=request.json["usuario"],
-            email=request.json["email"],
-            contrasena=request.json["contrasena"])
-
-        db.session.add(nuevo_usuario)
-        db.session.commit()
-
-        token_de_acceso = create_access_token(identity = nuevo_usuario.id)
-
-        return {"mensaje":"usuario creado exitosamente", "token":token_de_acceso}
-
-    def put(self, id_usuario):
-        """Cambia la contraseha."""
-
-        usuario = Usuario.query.get_or_404(id_usuario)
-
-        if Usuario.query.filter(Usuario.id==id_usuario).exists():
-            usuario.contrasena = request.json.get("contrasena",usuario.contrasena)
-            db.session.commit()
-            return usuario_schema.dump(usuario)
-        else:
-            return usuario
-
-    def delete(self, id_usuario):
-        """Elimina el usuario."""
-
-        usuario = Usuario.query.get_or_404(id_usuario)
-
-        if Usuario.query.filter(Usuario.id==id_usuario).exists():
-            db.session.delete(usuario)
-            db.session.commit()
-            return {"mensaje":"El usuario fue eliminado"}, 204
-
-        else:
-            return {"mensaje":"No existe el usuario a eliminar"}, 404
 
 
 # end point: /api/auth/login
