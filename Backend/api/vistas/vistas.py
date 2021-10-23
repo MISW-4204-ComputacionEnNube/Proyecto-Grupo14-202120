@@ -112,21 +112,20 @@ class VistaSignUp(Resource):
     def post(self):
         """Crea un nuevo usuario."""
 
-        usuario = request.json["usuario"]
-        email = request.json["email"]
+        usuario = request.json["username"]
         password1 = request.json["password1"]
         password2 = request.json["password2"]
+        email = request.json["email"]
         
-        # valida el email
-        err, email = ValidarEmail(email)
-        if err != 0:
-            return {"mensaje": f"Error en el email : {email}"}
-
         # valida el password
         err, password = ValidarPassword(password1, password2)
         if err != 0:
             return {"mensaje": f"Error en el password : {password}"}
 
+        # valida el email
+        err, email = ValidarEmail(email)
+        if err != 0:
+            return {"mensaje": f"Error en el email : {email}"}
 
         nuevo_usuario = Usuario(usuario=usuario,
             email=email,
@@ -137,32 +136,7 @@ class VistaSignUp(Resource):
 
         token_de_acceso = create_access_token(identity = nuevo_usuario.id)
 
-        return {"mensaje":"usuario creado exitosamente", "token":token_de_acceso}
-
-    def put(self, id_usuario):
-        """Cambia la contraseha."""
-
-        usuario = Usuario.query.get_or_404(id_usuario)
-
-        if Usuario.query.filter(Usuario.id==id_usuario).exists():
-            usuario.contrasena = request.json.get("contrasena",usuario.contrasena)
-            db.session.commit()
-            return usuario_schema.dump(usuario)
-        else:
-            return usuario
-
-    def delete(self, id_usuario):
-        """Elimina el usuario."""
-
-        usuario = Usuario.query.get_or_404(id_usuario)
-
-        if Usuario.query.filter(Usuario.id==id_usuario).exists():
-            db.session.delete(usuario)
-            db.session.commit()
-            return {"mensaje":"El usuario fue eliminado"}, 204
-
-        else:
-            return {"mensaje":"No existe el usuario a eliminar"}, 404
+        return {"mensaje": "usuario creado exitosamente", "token": token_de_acceso}
 
 
 # ----------------------------------------------------------------------------
