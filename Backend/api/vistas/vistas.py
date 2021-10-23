@@ -151,28 +151,45 @@ class VistaLogIn(Resource):
     def post(self):
         """Inicio de sesion."""
 
-        email = request.json["email"]
+        username = request.json["username"]
         password = request.json["password"]
 
-        # verifica que el email/password existan en la base de datos
-        if db.session.query(
-            Usuario.query.filter(
-            Usuario.email == email, 
-            Usuario.contrasena == password
-            ).exists()).scalar():
-
-            # obtiene el objeto usuario
-            usuario = Usuario.query.filter(
-                Usuario.email == email, 
+        if username is not None:
+            # verifica que el usuario y password existan en la base de datos
+            if db.session.query(
+                Usuario.query.filter(
+                Usuario.usuario == username, 
                 Usuario.contrasena == password
-                ).first()
-            # crea el token para el usuario
-            token_de_acceso = create_access_token(identity = usuario.id)
-            
-            return {"mensaje":"Inicio de sesion exitoso", "token": token_de_acceso}
+                ).exists()).scalar():
 
-        else:
-            return "El usuario no existe", 404
+                # obtiene el objeto usuario
+                usuario = Usuario.query.filter(
+                    Usuario.usuario == username, 
+                    Usuario.contrasena == password
+                    ).first()
+                # crea el token para el usuario
+                token_de_acceso = create_access_token(identity = usuario.id)
+                
+                return {"mensaje":"Inicio de sesion exitoso", "token": token_de_acceso}
+
+            # verifica que el email y password existan en la base de datos
+            if db.session.query(
+                Usuario.query.filter(
+                Usuario.email == username, 
+                Usuario.contrasena == password
+                ).exists()).scalar():
+
+                # obtiene el objeto usuario
+                usuario = Usuario.query.filter(
+                    Usuario.email == username, 
+                    Usuario.contrasena == password
+                    ).first()
+                # crea el token para el usuario
+                token_de_acceso = create_access_token(identity = usuario.id)
+                
+                return {"mensaje":"Inicio de sesion exitoso", "token": token_de_acceso}
+
+        return "El usuario no existe", 404
 
 
 # ----------------------------------------------------------------------------
