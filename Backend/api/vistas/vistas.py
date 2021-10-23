@@ -107,7 +107,7 @@ def ValidarPassword(password1: str, password2: str) -> tuple:
 
 # end point: /api/auth/signup
 class VistaSignUp(Resource):
-    """"""
+    """clase relacionada con la creación de usuario."""
 
     def post(self):
         """Crea un nuevo usuario."""
@@ -127,9 +127,11 @@ class VistaSignUp(Resource):
         if err != 0:
             return {"mensaje": f"Error en el email : {email}"}
 
-        nuevo_usuario = Usuario(usuario=usuario,
+        nuevo_usuario = Usuario(
+            usuario=usuario,
             email=email,
-            contrasena=password)
+            contrasena=password
+            )
 
         db.session.add(nuevo_usuario)
         db.session.commit()
@@ -137,6 +139,40 @@ class VistaSignUp(Resource):
         token_de_acceso = create_access_token(identity = nuevo_usuario.id)
 
         return {"mensaje": "usuario creado exitosamente", "token": token_de_acceso}
+
+
+# ----------------------------------------------------------------------------
+
+
+# end point: /api/auth/login
+class VistaLogIn(Resource):
+    """Clase relacionada con login."""
+
+    def post(self):
+        """Inicio de sesion."""
+
+        email = request.json["email"]
+        password = request.json["password"]
+
+        # verifica que el email/password existan en la base de datos
+        if db.session.query(
+            Usuario.query.filter(
+            Usuario.email == email, 
+            Usuario.contrasena == password
+            ).exists()).scalar():
+
+            # obtiene el objeto usuario
+            usuario = Usuario.query.filter(
+                Usuario.email == email, 
+                Usuario.contrasena == password
+                ).first()
+            # crea el token para el usuario
+            token_de_acceso = create_access_token(identity = usuario.id)
+            
+            return {"mensaje":"Inicio de sesion exitoso", "token": token_de_acceso}
+
+        else:
+            return "El usuario no existe", 404
 
 
 # ----------------------------------------------------------------------------
@@ -345,25 +381,6 @@ class VistaTarea(Resource):
             return msg, 402
 
 
-
-# end point: /api/auth/login
-class VistaLogIn(Resource):
-    """"""
-
-    def post(self):
-        """Inicio de sesion."""
-
-        usuario = Usuario.query.filter(Usuario.usuario == request.json["usuario"], 
-            Usuario.contrasena == request.json["contrasena"]).first()
-
-        db.session.commit()
-
-        if usuario is None:
-            return "El usuario no existe", 404
-
-        else:
-            token_de_acceso = create_access_token(identity = usuario.id)
-            return {"mensaje":"Inicio de sesion exitoso", "token": token_de_acceso}
 
 
 # end point: /api/files/<string:filename>
