@@ -574,13 +574,17 @@ class VistaUsuariosTarea(Resource):
             # si la tarea ya fue procesada retorna el archivo convertido
             if tarea.estado == "processed":
                 try:
-                    return send_file(tarea.ruta_archivo_destino)
+                    return send_file(tarea.ruta_archivo_destino, 
+                        attachment_filename=str(tarea.ruta_archivo_destino).\
+                            split('/')[-1])
                 except Exception as e:
             	    return str(e)
 
             else:
                 try:
-                    return send_file(tarea.ruta_archivo_origen)
+                    return send_file(tarea.ruta_archivo_origen, 
+                        attachment_filename=str(tarea.ruta_archivo_origen).\
+                            split('/')[-1])
                 except Exception as e:
             	    return str(e)
 
