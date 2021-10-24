@@ -625,7 +625,7 @@ class VistaEjecutarTareas(Resource):
         pool = mp.Pool(numProc)
 
         # inicia el multiprocesamiento
-        results = [pool.apply(Convert, args=(task.id_task)) for task in Tarea.\
+        results = [pool.apply(Convert, args=(task.id)) for task in Tarea.\
             query.filter(Tarea.estado=='uploaded').order_by(Tarea.fecha)]
 
         # cierra el pool
