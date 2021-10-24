@@ -245,7 +245,7 @@ class VistaLogIn(Resource):
 class VistaTareas(Resource):
     """"""
 
-    def get(self, user_id, max=100, order=0):
+    def get(self, user_id, max, order):
         """Retorna todas las tareas.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
