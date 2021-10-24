@@ -285,6 +285,10 @@ class VistaTareas(Resource):
             if order == 1:
                 # ordena las tareas de forma descendente
                 tareas = tareas.order_by(desc(Tarea.id))
+            elif order == 0:
+                # ordena las tareas de forma ascendente
+                tareas = tareas.order_by(Tarea.id)
+
 
             count = 0
             lista = []
