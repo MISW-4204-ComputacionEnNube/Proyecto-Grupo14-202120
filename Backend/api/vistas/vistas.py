@@ -246,7 +246,7 @@ class VistaLogIn(Resource):
 class VistaTareas(Resource):
     """"""
 
-    @jwt_required()
+    @jwt_required(optional=True)
     def get(self):
         """Retorna todas las tareas.
 
@@ -259,7 +259,7 @@ class VistaTareas(Resource):
 
         current_user = get_jwt_identity()
         print(current_user)
-        
+
         # obtiene los datos como parametros de la solicitud
         user_id = request.args.get('user_id', default = 0, type = int)
         max = request.args.get('max', default = 100, type = int)
@@ -307,7 +307,7 @@ class VistaTareas(Resource):
             return "No se suministro el iD del usuario a consultar.", 400
 
 
-    @jwt_required()
+    @jwt_required(optional=True)
     def post(self):
         """Se crea una nueva tarea.
         
@@ -429,7 +429,7 @@ class VistaTareas(Resource):
 class VistaTarea(Resource):
     """"""
 
-    @jwt_required()
+    @jwt_required(optional=True)
     def get(self, id_task):
         """Se obtiene una tarea con base en el id de la tarea.
 
@@ -446,7 +446,7 @@ class VistaTarea(Resource):
         else:
             return f"No existe la tarea {id_task}."
 
-    @jwt_required()
+    @jwt_required(optional=True)
     def put(self, id_task):
         """Se actualiza una tarea.
 
@@ -526,7 +526,7 @@ class VistaTarea(Resource):
             return "No existe la tarea a actualizar.", 400
 
 
-    @jwt_required()
+    @jwt_required(optional=True)
     def delete(self, id_task):
         """Se elimina el archivo.
 
@@ -566,7 +566,7 @@ class VistaTarea(Resource):
 class VistaUsuariosTarea(Resource):
     """"""
 
-    @jwt_required()
+    @jwt_required(optional=True)
     def get(self, filename):
         """Retorna el archivo relacionada a un nombre de archivo."""
 
