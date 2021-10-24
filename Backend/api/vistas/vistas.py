@@ -11,7 +11,7 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token, \
     get_jwt_identity
-from sqlalchemy.exc import integrityError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc
 from datetime import datetime
 from operator import contains
@@ -176,7 +176,7 @@ class VistaSignUp(Resource):
 
 
 # end point: /api/auth/login
-class VistaLogin(Resource):
+class VistaLogIn(Resource):
     """Clase relacionada con login."""
 
     def post(self):
