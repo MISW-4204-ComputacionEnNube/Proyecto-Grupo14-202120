@@ -310,23 +310,9 @@ class VistaTareas(Resource):
              -H "Authorization: Bearer {..token..}" 
              -F "fileName=@/home/estudiante/music/tina-guo.mp3;type=audio/mpeg"  
              -F "newFormat=wav" 
-             -F "user_id=1" http://localhost:5000/api/tasks
+             -F "user_id=1" 
+             http://localhost:5000/api/tasks
         """
-
-
-        # obtiene el archivo enviado
-        try:
-            f = request.files['fileName']
-        except:
-            # no se envio el archivo, por ende no se crea la tarea
-            return "No se cargo el archivo.", 400
-
-        # obtiene el tipo de archivo al que se transformara
-        try:
-            extension_destino = request.form['newFormat']
-        except:
-            # no se envio la extension de destino, por ende no se crea la tarea
-            return "No se definio la extension de destino.", 400
 
         # obtiene el identificador del usuario
         try:
@@ -335,81 +321,100 @@ class VistaTareas(Resource):
             # no se envio la extension de destino, por ende no se crea la tarea
             return "No se reporto el id del usuario.", 400
 
-        if f is None:
-            # no se envio el archivo, por ende no se crea la tarea
-            return "No se cargo el archivo.", 400
+        # valida que el usuario exista
+        if db.session.query(Usuario.query.filter(Usuario.id==usuario_id).exists()).scalar():
 
-        if extension_destino is None:
-            # no se envio la extension de destino, por ende no se crea la tarea
-            return "No se definio la extension de destino.", 400
+            # obtiene el archivo enviado
+            try:
+                f = request.files['fileName']
+            except:
+                # no se envio el archivo, por ende no se crea la tarea
+                return "No se cargo el archivo.", 400
 
-        if usuario_id is None:
-            # no se envio la extension de destino, por ende no se crea la tarea
-            return "No se reporto el id del usuario.", 400
+            # obtiene el tipo de archivo al que se transformara
+            try:
+                extension_destino = request.form['newFormat']
+            except:
+                # no se envio la extension de destino, por ende no se crea la tarea
+                return "No se definio la extension de destino.", 400
 
-        # obtiene el nombre del archivo
-        archivo = secure_filename(f.filename)
-        # obtiene la extension del archivo en minuscula
-        extension_origen = archivo.split('.')[-1].lower()
-        # obtiene la base del nombre del archivo
-        base_archivo = archivo[:(len(archivo)-len(extension_origen)-1)]
-        # pasa la extension de destino a minuscula
-        extension_destino = extension_destino.lower()
+            if f is None:
+                # no se envio el archivo, por ende no se crea la tarea
+                return "No se cargo el archivo.", 400
 
-        # valida que el nombre de archivo tenga base
-        if len(base_archivo) == 0:
-            # nombre de archivo sin base
-            return "Nombre de archivo sin base.", 400
+            if extension_destino is None:
+                # no se envio la extension de destino, por ende no se crea la tarea
+                return "No se definio la extension de destino.", 400
 
-        # valida la extension del archivo de origen
-        if extension_origen not in formatos:
-            # el formato del archivo no es admitido
-            return "El formato del archivo no es admitido.", 400
+            if usuario_id is None:
+                # no se envio la extension de destino, por ende no se crea la tarea
+                return "No se reporto el id del usuario.", 400
 
-        # valida la extension de destino
-        if extension_destino not in formatos:
-            # el formato de destino no es admitido
-            return "El formato de destino no es admitido.", 400
+            # obtiene el nombre del archivo
+            archivo = secure_filename(f.filename)
+            # obtiene la extension del archivo en minuscula
+            extension_origen = archivo.split('.')[-1].lower()
+            # obtiene la base del nombre del archivo
+            base_archivo = archivo[:(len(archivo)-len(extension_origen)-1)]
+            # pasa la extension de destino a minuscula
+            extension_destino = extension_destino.lower()
 
-        # obtiene la fecha actual
-        fecha = datetime.now()
-        tfecha = fecha.strftime('%Y%m%d%H%M%S')
+            # valida que el nombre de archivo tenga base
+            if len(base_archivo) == 0:
+                # nombre de archivo sin base
+                return "Nombre de archivo sin base.", 400
 
-        # genera el nombre del archivo con el que se almacenara el archivo
-        archivo_origen = f"{tfecha}_{archivo}".replace(' ', '_')
+            # valida la extension del archivo de origen
+            if extension_origen not in formatos:
+                # el formato del archivo no es admitido
+                return "El formato del archivo no es admitido.", 400
 
-        # genera el nombre del archivo con el que se almacenara el archivo 
-        # transformado
-        archivo_destino = f"{tfecha}_{base_archivo}.{extension_destino}".\
-            replace(' ', '_')
+            # valida la extension de destino
+            if extension_destino not in formatos:
+                # el formato de destino no es admitido
+                return "El formato de destino no es admitido.", 400
 
-        # construye la ruta donde se almaceno el archivo
-        ruta_archivo_origen = f"{ruta}/{archivo_origen}"
-        # construye la ruta donde se almacenara el archivo transformado
-        ruta_archivo_destino = f"{ruta}/{archivo_destino}"
+            # obtiene la fecha actual
+            fecha = datetime.now()
+            tfecha = fecha.strftime('%Y%m%d%H%M%S')
 
-        try:
-            # almacena el archivo
-            f.save(ruta_archivo_origen)
-        except:
-            return "Error al almacenar el archivo.", 400
+            # genera el nombre del archivo con el que se almacenara el archivo
+            archivo_origen = f"{tfecha}_{archivo}".replace(' ', '_')
 
-        # crea el registro en la base de datos
-        nueva_tarea = Tarea(
-            archivo = archivo,
-            formato_origen = extension_origen,
-            ruta_archivo_origen = ruta_archivo_origen,
-            formato_destino = extension_destino,
-            ruta_archivo_destino = ruta_archivo_destino,
-            fecha = fecha,
-            estado = 'uploaded',
-            usuario_id = usuario_id)
+            # genera el nombre del archivo con el que se almacenara el archivo 
+            # transformado
+            archivo_destino = f"{tfecha}_{base_archivo}.{extension_destino}".\
+                replace(' ', '_')
 
-        db.session.add(nueva_tarea)
-        db.session.commit()
+            # construye la ruta donde se almaceno el archivo
+            ruta_archivo_origen = f"{ruta}/{archivo_origen}"
+            # construye la ruta donde se almacenara el archivo transformado
+            ruta_archivo_destino = f"{ruta}/{archivo_destino}"
 
-        return tarea_schema.dump(nueva_tarea)
+            try:
+                # almacena el archivo
+                f.save(ruta_archivo_origen)
+            except:
+                return "Error al almacenar el archivo.", 400
 
+            # crea el registro en la base de datos
+            nueva_tarea = Tarea(
+                archivo = archivo,
+                formato_origen = extension_origen,
+                ruta_archivo_origen = ruta_archivo_origen,
+                formato_destino = extension_destino,
+                ruta_archivo_destino = ruta_archivo_destino,
+                fecha = fecha,
+                estado = 'uploaded',
+                usuario_id = usuario_id)
+
+            db.session.add(nueva_tarea)
+            db.session.commit()
+
+            return tarea_schema.dump(nueva_tarea)
+
+        else:
+            return f"Usuario {usuario_id} no existe.", 400
 
 # ----------------------------------------------------------------------------
 
