@@ -42,6 +42,8 @@ def SendEmail(email: str, mensaje: str) -> str:
 def Convert(id_task: int) ->str:
     """Funcion que convierte el archivo de la tarea."""
 
+    print(">>> id_task : ", id_task)
+    
     # obtiene la tarea correspondiente
     task = Tarea.query.get(id_task)
 

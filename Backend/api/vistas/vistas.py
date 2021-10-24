@@ -245,7 +245,7 @@ class VistaLogIn(Resource):
 
 # end point: /api/tasks
 class VistaTareas(Resource):
-    """"""
+    """Clase relacionada con las tareas en general."""
 
     # @jwt_required((optional=True)
     def get(self):
@@ -425,7 +425,7 @@ class VistaTareas(Resource):
 
 # end point: /api/tasks/<int:id_task>
 class VistaTarea(Resource):
-    """"""
+    """Clase relacionada con una tarea en particular."""
 
     # @jwt_required((optional=True)
     def get(self, id_task):
@@ -561,7 +561,7 @@ class VistaTarea(Resource):
 
 # end point: /api/files/<string:filename>
 class VistaUsuariosTarea(Resource):
-    """"""
+    """Clase relacionada con la entrega de archivos al usuario"""
 
     # @jwt_required((optional=True)
     def get(self, filename):
@@ -606,7 +606,7 @@ class VistaUsuariosTarea(Resource):
 
 # end point: /api/run_tasks
 class VistaEjecutarTareas(Resource):
-    """"""
+    """Clase relacionada con el procesamiento de las tareas"""
 
     def get(self):
         """Se dispara la tarea de conversion.
