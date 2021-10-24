@@ -36,33 +36,37 @@ def SendEmail(email: str, mensaje: str) -> str:
     return "Done"
 
 
-def CronConvert() ->str:
-    """Funcion que se dispara por un cron y convierte los archivos pendientes."""
+# ----------------------------------------------------------------------------
 
-    # hace un ciclo por las tareas donde el estado es 'uploaded'
-    for task in Tarea.query.filter(Tarea.estado=='uploaded').order_by(Tarea.fecha):
 
-        # utiliza ffmpeg para la conversión siempre y cuando sea de formato
-        # 'aac', 'mp3', 'ogg', 'wav', 'wma'.
-        formato_ffmpeg = ['aac', 'mp3', 'ogg', 'wav', 'wma']
-        if task.formato_origen in formato_ffmpeg and \
-            task.formato_destino in formato_ffmpeg:
+def Convert(id_task: int) ->str:
+    """Funcion que convierte el archivo de la tarea."""
 
-            print(">>> Procesando archivo : ", task.archivo, " | ",
-                task.formato_origen, " -> ", task.formato_destino)
+    # obtiene la tarea correspondiente
+    task = Tarea.query.get(id_task)
 
-            # ejecuta un subproceso que hace la conversión
-            subprocess.call(['ffmpeg', '-i', task.ruta_archivo_origen,
-                task.ruta_archivo_destino])
+    # utiliza ffmpeg para la conversión siempre y cuando sea de formato
+    # 'aac', 'mp3', 'ogg', 'wav', 'wma'.
+    formato_ffmpeg = ['aac', 'mp3', 'ogg', 'wav', 'wma']
 
-            task.estado = "processed"
-            db.session.commit()
+    if task.formato_origen in formato_ffmpeg and \
+        task.formato_destino in formato_ffmpeg:
 
-            # envia el mensaje al usuario
-            mensaje = f"La tarea {task.id} fur procesada correctamente."
-            SendEmail(task.usuario.email, mensaje)
+        print(">>> Procesando archivo : ", task.archivo, " | ",
+            task.formato_origen, " -> ", task.formato_destino)
 
-        else:
-            print("Formato no admitido")
+        # ejecuta un subproceso que hace la conversión
+        subprocess.call(['ffmpeg', '-i', task.ruta_archivo_origen,
+            task.ruta_archivo_destino])
+
+        task.estado = "processed"
+        db.session.commit()
+
+        # envia el mensaje al usuario
+        mensaje = f"La tarea {task.id} fue procesada correctamente."
+        SendEmail(task.usuario.email, mensaje)
+
+    else:
+        return "Formato no admitido"
 
     return "Done"

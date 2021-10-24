@@ -22,9 +22,10 @@ from werkzeug.utils import secure_filename
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy
 import subprocess
+import multiprocessing as mp
 
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
-from ..tareas import CronConvert, SendEmail
+from ..tareas import Convert, SendEmail
 
 # ----------------------------------------------------------------------------
 
@@ -533,7 +534,6 @@ class VistaTarea(Resource):
              http://localhost:5000/api/tasks/1
         """
 
-
         if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).scalar():
 
             # obtiene la tarea
@@ -565,7 +565,13 @@ class VistaUsuariosTarea(Resource):
 
     # @jwt_required((optional=True)
     def get(self, filename):
-        """Retorna el archivo relacionada a un nombre de archivo."""
+        """Retorna el ultimo archivo relacionada a un nombre de archivo.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X DELETE -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}" 
+             http://localhost:5000/api/files/tina-guo.mp3
+        """
 
         # obtiene la ultima tarea cargada que tiene como nombre de archivo el
         # pasado como parametro de la funcion
@@ -602,7 +608,7 @@ class VistaUsuariosTarea(Resource):
 class VistaEjecutarTareas(Resource):
     """"""
 
-    def post(self):
+    def get(self):
         """Se dispara la tarea de conversion.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
@@ -612,6 +618,18 @@ class VistaEjecutarTareas(Resource):
              http://localhost:5000/api/run_tasks
         """
 
-        return CronConvert()
+        # obtiene los datos como parametros de la solicitud
+        numProc = request.args.get('numProc', default = mp.cpu_count(), type = int)
 
+        # Init multiprocessing.Pool()
+        pool = mp.Pool(numProc)
+
+        # inicia el multiprocesamiento
+        results = [pool.apply(Convert, args=(task.id_task)) for task in Tarea.\
+            query.filter(Tarea.estado=='uploaded').order_by(Tarea.fecha)]
+
+        # cierra el pool
+        pool.close()
+
+        return results
 

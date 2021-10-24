@@ -13,7 +13,8 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
 from api.modelos import db
-from api.vistas import VistaSignUp, VistaTarea, VistaTareas, VistaUsuariosTarea, VistaLogIn, VistaEjecutarTareas
+from api.vistas import VistaSignUp, VistaTarea, VistaTareas, \
+    VistaUsuariosTarea, VistaLogIn, VistaEjecutarTareas
 
 # ----------------------------------------------------------------------------
 
