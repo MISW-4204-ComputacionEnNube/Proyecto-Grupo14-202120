@@ -245,21 +245,23 @@ class VistaLogIn(Resource):
 class VistaTareas(Resource):
     """"""
 
-    def get(self, user_id, max, order):
+    def get(self):
         """Retorna todas las tareas.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X GET 
              -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer {..token..}"
-             -F "user_id=1"
-             -F "max=100"
-             -F "order=0"
-             http://localhost:5000/api/tasks
+             "http://localhost:5000/api/tasks?user_id=1&max=100&order=0"
         """
 
+        # obtiene los datos como parametros de la solicitud
+        user_id = request.args.get('user_id', default = 0, type = int)
+        max = request.args.get('max', default = 100, type = int)
+        order = request.args.get('order', default = 0, type = int)
+
         # valida que se haya pasado el id del usuario
-        if user_id is not None:
+        if user_id > 0:
 
             # obtiene todas las tareas del usuario
             tareas = Tarea.query(
@@ -271,33 +273,17 @@ class VistaTareas(Resource):
 
             if len(tareas) > 0:
 
-                # ordena los resultados
-                if order is not None:
-                    try:
-                        order = int(str(order))
-                    except:
-                        return "El valor pasado en 'order' no corresponde a un " \
-                            "dato numerico.", 400
+                if order not in (0, 1):
+                    return "El valor numerico pasado en 'order' debe ser " \
+                        "0 o 1.", 400
 
-                    if order not in (0, 1):
-                        return "El valor numerico pasado en 'order' debe ser " \
-                            "0 o 1.", 400
+                if order == 1:
+                    # ordena las tareas de forma descendente
+                    tareas = tareas.order_by(desc(Tarea.id))
 
-                    if order == 1:
-                        # ordena las tareas de forma descendente
-                        tareas = tareas.order_by(desc(Tarea.id))
-
-                # trae un grupo de resultados
-                if max is not None:
-                    try:
-                        max = int(str(max))
-                    except:
-                        return "El valor pasado en 'max' no corresponde a un " \
-                            "dato numerico.", 400
-
-                    if max < 1:
-                        return "El valor pasado en 'max' debe ser un numero " \
-                            "entero positivo.", 400
+                if max < 1:
+                    return "El valor pasado en 'max' debe ser un numero " \
+                        "entero positivo.", 400
 
                 count = 0
                 lista = []
