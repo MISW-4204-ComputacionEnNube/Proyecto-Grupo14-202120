@@ -31,7 +31,7 @@ def create_app():
 
     # abre el archivo de credenciales con la información de conexión a la 
     # base de datos
-    with open('credenciales.json') as arch:
+    with open('api/credenciales.json') as arch:
         config = json.load(arch)
 
     # crea la cadena de conexión
@@ -44,6 +44,5 @@ def create_app():
     app.config['JWT_SECRET_KEY']='Maestría-en-Ingeniería-de-Software-Miso2021'
     app.config['PROPAGATE_EXCEPTIONS'] = True
     app.config['UPLOAD_FOLDER'] = "/home/estudiante/Proyecto-Grupo14-202120/Backend/files"
-    
 
     return app

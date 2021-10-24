@@ -12,9 +12,8 @@ from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
-from .modelos import db
-from .vistas import VistaSignUp, VistaTarea, VistaTareas, \
-    VistaUsuariosTarea, VistaLogIn, VistaEjecutarTareas
+from api.modelos import db
+from api.vistas import VistaSignUp, VistaTarea, VistaTareas, VistaUsuariosTarea, VistaLogIn, VistaEjecutarTareas
 
 # ----------------------------------------------------------------------------
 
@@ -50,3 +49,6 @@ api.add_resource(VistaUsuariosTarea, '/api/files/<string:filename>')
 api.add_resource(VistaEjecutarTareas, '/api/run_tasks')
 
 jwt = JWTManager(app)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
