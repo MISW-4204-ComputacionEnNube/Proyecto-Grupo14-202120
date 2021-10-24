@@ -11,8 +11,11 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token, \
     get_jwt_identity
+from flask import send_file
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc
+
 from datetime import datetime
 from operator import contains
 from werkzeug.utils import secure_filename
@@ -570,10 +573,16 @@ class VistaUsuariosTarea(Resource):
 
             # si la tarea ya fue procesada retorna el archivo convertido
             if tarea.estado == "processed":
-                return tarea.ruta_archivo_destino
+                try:
+                    return send_file(tarea.ruta_archivo_destino)
+                except Exception as e:
+            	    return str(e)
 
             else:
-                return tarea.ruta_archivo_origen
+                try:
+                    return send_file(tarea.ruta_archivo_origen)
+                except Exception as e:
+            	    return str(e)
 
         else:
             return f"No existe una tarea sobre el archivo {filename}."            
