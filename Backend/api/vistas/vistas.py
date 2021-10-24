@@ -273,10 +273,10 @@ class VistaTareas(Resource):
         # valida que se haya pasado el id del usuario
         if user_id > 0:
 
-            # obtiene las tareas asociadas al usuario
-            tareas = Tarea.query.filter(Tarea.usuario_id==user_id)
+            if db.session.query(Tarea.query.filter(Tarea.usuario_id==user_id).exists()).scalar():
 
-            if len(tareas) > 0:
+                # obtiene las tareas asociadas al usuario
+                tareas = Tarea.query.filter(Tarea.usuario_id==user_id)
 
                 if order == 1:
                     # ordena las tareas de forma descendente
