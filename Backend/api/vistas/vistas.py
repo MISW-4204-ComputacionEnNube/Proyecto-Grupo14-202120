@@ -18,10 +18,11 @@ from operator import contains
 from werkzeug.utils import secure_filename
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy
+import subprocess
 
 from ..tareas import registrar_log
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
-from ..tareas.convert import CronConvert
+from ..tareas.convert import CronConvert, SendEmail
 
 # ----------------------------------------------------------------------------
 
@@ -312,33 +313,33 @@ class VistaTareas(Resource):
             f = request.files['fileName']
         except:
             # no se envio el archivo, por ende no se crea la tarea
-            return "No se cargo el archivo", 400
+            return "No se cargo el archivo.", 400
 
         # obtiene el tipo de archivo al que se transformara
         try:
             extension_destino = request.form['newFormat']
         except:
             # no se envio la extension de destino, por ende no se crea la tarea
-            return "No se definio la extension de destino", 400
+            return "No se definio la extension de destino.", 400
 
         # obtiene el identificador del usuario
         try:
             usuario_id = request.form["user_id"]
         except:
             # no se envio la extension de destino, por ende no se crea la tarea
-            return "No se reporto el id del usuario", 400
+            return "No se reporto el id del usuario.", 400
 
         if f is None:
             # no se envio el archivo, por ende no se crea la tarea
-            return "No se cargo el archivo", 400
+            return "No se cargo el archivo.", 400
 
         if extension_destino is None:
             # no se envio la extension de destino, por ende no se crea la tarea
-            return "No se definio la extension de destino", 400
+            return "No se definio la extension de destino.", 400
 
         if usuario_id is None:
             # no se envio la extension de destino, por ende no se crea la tarea
-            return "No se reporto el id del usuario", 400
+            return "No se reporto el id del usuario.", 400
 
         # obtiene el nombre del archivo
         archivo = secure_filename(f.filename)
@@ -352,17 +353,17 @@ class VistaTareas(Resource):
         # valida que el nombre de archivo tenga base
         if len(base_archivo) == 0:
             # nombre de archivo sin base
-            return "Nombre de archivo sin base", 400
+            return "Nombre de archivo sin base.", 400
 
         # valida la extension del archivo de origen
         if extension_origen not in formatos:
             # el formato del archivo no es admitido
-            return "El formato del archivo no es admitido", 400
+            return "El formato del archivo no es admitido.", 400
 
         # valida la extension de destino
         if extension_destino not in formatos:
             # el formato de destino no es admitido
-            return "El formato de destino no es admitido", 400
+            return "El formato de destino no es admitido.", 400
 
         # obtiene la fecha actual
         fecha = datetime.now()
@@ -385,7 +386,7 @@ class VistaTareas(Resource):
             # almacena el archivo
             f.save(ruta_archivo_origen)
         except:
-            return "Error al almacenar el archivo", 400
+            return "Error al almacenar el archivo.", 400
 
         # crea el registro en la base de datos
         nueva_tarea = Tarea(
@@ -404,21 +405,7 @@ class VistaTareas(Resource):
         return tarea_schema.dump(nueva_tarea)
 
 
-# end point: /api/run_tasks
-class VistaEjecutarTareas(Resource):
-    """"""
-
-    def post(self):
-        """Se dispara la tarea de conversion.
-
-        Esta funcion se llama usando CURL desde la linea de comandos asi:
-        Esta funcion se llama usando CURL desde la linea de comandos asi:
-        curl -X POST -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer {..token..}" 
-             http://localhost:5000/api/run_tasks
-        """
-
-        return CronConvert()
+# ----------------------------------------------------------------------------
 
 
 # end point: /api/tasks/<int:id_task>
@@ -437,6 +424,76 @@ class VistaTarea(Resource):
         return tarea_schema.dump(Tarea.query.get_or_404(id_task))
 
 
+    def put(self, id_task, newFormat):
+        """Se actualiza una tarea.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X DELETE -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}"
+             http://localhost:5000/api/tasks/1
+        """
+
+        # obtiene el tipo de archivo al que se transformara
+        try:
+            extension_destino = newFormat
+        except:
+            # no se envio la extension de destino, por ende no se crea la tarea
+            return "No se definio la extension de destino.", 400
+
+        if extension_destino is None:
+            # no se envio la extension de destino, por ende no se crea la tarea
+            return "No se definio la extension de destino.", 400
+
+        # pasa la extension de destino a minuscula
+        extension_destino = extension_destino.lower()
+
+        # valida la extension de destino
+        if extension_destino not in formatos:
+            # el formato de destino no es admitido
+            return "El formato de destino no es admitido.", 400
+
+        # determina si existe una tarea con ese id
+        if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).scalar():
+
+            # obtiene la tarea con el id
+            tarea = Tarea.query.get(id_task)
+
+            # obtiene la fecha actual
+            fecha = datetime.now()
+            tfecha = fecha.strftime('%Y%m%d%H%M%S')
+            archivo = tarea.archivo
+
+            # obtiene la extension del archivo en minuscula
+            extension_origen = archivo.split('.')[-1].lower()
+            # obtiene la base del nombre del archivo
+            base_archivo = archivo[:(len(archivo)-len(extension_origen)-1)]
+            # genera el nombre del archivo con el que se almacenara el archivo 
+            # transformado
+            archivo_destino = f"{tfecha}_{base_archivo}.{extension_destino}".\
+                replace(' ', '_')
+            # construye la ruta donde se almacenara el archivo transformado
+            ruta_archivo_destino = f"{ruta}/{archivo_destino}"
+
+            # elimina el archivo previamente convertido
+            if tarea.estado == "processed":
+                subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
+
+            # actualiza la tarea
+            tarea.formato_destino = extension_destino
+            tarea.ruta_archivo_destino = ruta_archivo_destino
+            tarea.estado = 'uploaded'
+            db.session.commit()
+
+            # envia el mensaje al usuario informando de la actualizacion
+            mensaje = f"Se actualizó exitosamente la tarea {id_task}."
+            SendEmail(tarea.usuario.email, mensaje)
+
+            return "La tarea fue actualizada", 200
+
+        else:
+            return "No existe la tarea a eliminar.", 400
+
+
     def delete(self, id_task):
         """Se elimina el archivo.
 
@@ -449,18 +506,44 @@ class VistaTarea(Resource):
 
         if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).scalar():
 
+            # obtiene la tarea
             tarea = Tarea.query.get(id_task)
+
+            # elimina el archivo original
+            subprocess.call(['rm', '-f', tarea.ruta_archivo_origen])
+
+            # elimina el archivo convertido
+            if tarea.estado == "processed":
+                subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
+
+            # elimina el registro en la base de datos
             db.session.delete(tarea)
             db.session.commit()
 
-            msg = "La tarea fue eliminada"
-            flash(msg)
-            return msg, 204
+            return "La tarea fue eliminada", 200
 
         else:
-            msg = "No existe la tarea a eliminar"
-            flash(msg)
-            return msg, 402
+            return "No existe la tarea a eliminar", 400
+
+
+# ----------------------------------------------------------------------------
+
+
+# end point: /api/run_tasks
+class VistaEjecutarTareas(Resource):
+    """"""
+
+    def post(self):
+        """Se dispara la tarea de conversion.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X POST -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}" 
+             http://localhost:5000/api/run_tasks
+        """
+
+        return CronConvert()
 
 
 
