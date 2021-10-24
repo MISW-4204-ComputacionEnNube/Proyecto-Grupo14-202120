@@ -138,6 +138,26 @@ class VistaSignUp(Resource):
         if err != 0:
             return {"mensaje": f"Error en el email : {email}"}
 
+        # evalua si ya existe un usuario con igual usuario
+        if db.session.query(
+            Usuario.query.filter(
+            Usuario.usuario == usuario
+            ).exists()).scalar():
+
+            # usuario ya existente en la base de datos
+            return f"Usuario {usuario} ya existente. " \
+                "Cámbielo e intente de nuevo", 400
+
+        # evalua si ya existe un usuario con igual email
+        if db.session.query(
+            Usuario.query.filter(
+            Usuario.email == email
+            ).exists()).scalar():
+
+            # email ya existente en la base de datos
+            return f"Email {email} ya existente. " \
+                "Cámbielo e intente de nuevo", 400
+
         nuevo_usuario = Usuario(
             usuario=usuario,
             email=email,
