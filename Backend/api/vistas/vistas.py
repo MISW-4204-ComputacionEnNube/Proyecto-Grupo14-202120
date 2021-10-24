@@ -11,7 +11,7 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token, \
     get_jwt_identity
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import integrityError
 from sqlalchemy import desc
 from datetime import datetime
 from operator import contains
@@ -79,7 +79,7 @@ def ValidarPassword(password1: str, password2: str) -> tuple:
     if password1 is None:
         return -2, "Error password2 inexistente"
     if password1 != password2:
-        return -3, "Error de validación en comparación del password"
+        return -3, "Error de validacion en comparacion del password"
 
     # define la complejidad mínima del password
     policy = PasswordPolicy.from_names(
@@ -94,11 +94,11 @@ def ValidarPassword(password1: str, password2: str) -> tuple:
     # evalua la calidad del password
     result = policy.test(password1)
     if len(result) > 0:
-        # tiene errores de validación el password
+        # tiene errores de validacion el password
         return -4, f"El password tiene {len(result)} errores de " + \
-                   f"validación en complejidad : {str(result)}. " + \
-                   f"Debe tener mínimo: 8 carácteres, 2 mayúsculas, " + \
-                   f"2 dígitos, 2 carácteres especiales."
+                   f"validacion en complejidad : {str(result)}. " + \
+                   f"Debe tener mínimo: 8 caracteres, 2 mayusculas, " + \
+                   f"2 dígitos, 2 caracteres especiales."
     
     return 0, password1
 
@@ -108,7 +108,7 @@ def ValidarPassword(password1: str, password2: str) -> tuple:
 
 # end point: /api/auth/signup
 class VistaSignUp(Resource):
-    """clase relacionada con la creación de usuario."""
+    """clase relacionada con la creacion de usuario."""
 
     def post(self):
         """Crea un nuevo usuario.
@@ -146,7 +146,7 @@ class VistaSignUp(Resource):
 
             # usuario ya existente en la base de datos
             return f"Usuario {usuario} ya existente. " \
-                "Cámbielo e intente de nuevo", 400
+                "Cambielo e intente de nuevo", 400
 
         # evalua si ya existe un usuario con igual email
         if db.session.query(
@@ -156,7 +156,7 @@ class VistaSignUp(Resource):
 
             # email ya existente en la base de datos
             return f"Email {email} ya existente. " \
-                "Cámbielo e intente de nuevo", 400
+                "Cambielo e intente de nuevo", 400
 
         nuevo_usuario = Usuario(
             usuario=usuario,
@@ -176,11 +176,11 @@ class VistaSignUp(Resource):
 
 
 # end point: /api/auth/login
-class VistaLogIn(Resource):
+class VistaLogin(Resource):
     """Clase relacionada con login."""
 
     def post(self):
-        """Inicio de sesion.
+        """inicio de sesion.
     
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X POST
@@ -216,7 +216,7 @@ class VistaLogIn(Resource):
                 # crea el token para el usuario
                 token_de_acceso = create_access_token(identity = usuario.id)
                 
-                return {"mensaje":"Inicio de sesion exitoso", "token": token_de_acceso}
+                return {"mensaje":"inicio de sesion exitoso", "token": token_de_acceso}
 
             # verifica que el email y password existan en la base de datos
             if db.session.query(
@@ -233,7 +233,7 @@ class VistaLogIn(Resource):
                 # crea el token para el usuario
                 token_de_acceso = create_access_token(identity = usuario.id)
                 
-                return {"mensaje":"Inicio de sesion exitoso", "token": token_de_acceso}
+                return {"mensaje":"inicio de sesion exitoso", "token": token_de_acceso}
 
         return "El usuario no existe", 404
 
@@ -277,7 +277,7 @@ class VistaTareas(Resource):
                         order = int(str(order))
                     except:
                         return "El valor pasado en 'order' no corresponde a un " \
-                            "dato numérico.", 400
+                            "dato numerico.", 400
 
                     if order not in (0, 1):
                         return "El valor numerico pasado en 'order' debe ser " \
@@ -293,7 +293,7 @@ class VistaTareas(Resource):
                         max = int(str(max))
                     except:
                         return "El valor pasado en 'max' no corresponde a un " \
-                            "dato numérico.", 400
+                            "dato numerico.", 400
 
                     if max < 1:
                         return "El valor pasado en 'max' debe ser un numero " \
@@ -312,7 +312,7 @@ class VistaTareas(Resource):
             else:
                 return f"El usuario {user_id} no tiene tareas registradas.", 400
         else:
-            return "No se suministró el ID del usuario a consultar.", 400
+            return "No se suministro el iD del usuario a consultar.", 400
 
 
     def post(self):
@@ -504,7 +504,7 @@ class VistaTarea(Resource):
             db.session.commit()
 
             # envia el mensaje al usuario informando de la actualizacion
-            mensaje = f"Se actualizó exitosamente la tarea {id_task}."
+            mensaje = f"Se actualizo exitosamente la tarea {id_task}."
             SendEmail(tarea.usuario.email, mensaje)
 
             return "La tarea fue actualizada", 200
@@ -555,8 +555,8 @@ class VistaUsuariosTarea(Resource):
     def get(self, filename):
         """Retorna el archivo relacionada a un nombre de archivo."""
 
-        # obtiene la última tarea cargada que tiene como nombre de archivo el
-        # pasado como parámetro de la función
+        # obtiene la ultima tarea cargada que tiene como nombre de archivo el
+        # pasado como parametro de la funcion
         tarea = Tarea.query.filter(Tarea.archivo.contains(filename)).\
             order_by(Tarea.id.desc()).first()
 
