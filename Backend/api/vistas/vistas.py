@@ -254,16 +254,16 @@ class VistaTareas(Resource):
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X GET 
              -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer {..token..}"
-             "http://localhost:5000/api/tasks?user_id=1&max=100&order=0"
+             -H "Authorization: Bearer ..token.."
+             "http://localhost:5000/api/tasks?max=100&order=0"
         """
 
+        # obtiene los datos del usuario
         current_user_id = get_jwt_identity()
-        user = Usuario.filter.get(current_user_id)
+        user = Usuario.query.get(current_user_id)
         user_id = user.id
 
         # obtiene los datos como parametros de la solicitud
-        # user_id = request.args.get('user_id', default = 0, type = int)
         max = request.args.get('max', default = 100, type = int)
         order = request.args.get('order', default = 0, type = int)
 
@@ -277,36 +277,31 @@ class VistaTareas(Resource):
             return "El valor numerico pasado en 'order' debe ser " \
                 "0 o 1.", 400
 
-        # valida que se haya pasado el id del usuario
-        if user_id > 0:
+        if db.session.query(Tarea.query.filter(Tarea.usuario_id==user_id).exists()).scalar():
 
-            if db.session.query(Tarea.query.filter(Tarea.usuario_id==user_id).exists()).scalar():
+            # obtiene las tareas asociadas al usuario
+            tareas = Tarea.query.filter(Tarea.usuario_id==user_id)
 
-                # obtiene las tareas asociadas al usuario
-                tareas = Tarea.query.filter(Tarea.usuario_id==user_id)
+            if order == 1:
+                # ordena las tareas de forma descendente
+                tareas = tareas.order_by(desc(Tarea.id))
 
-                if order == 1:
-                    # ordena las tareas de forma descendente
-                    tareas = tareas.order_by(desc(Tarea.id))
+            count = 0
+            lista = []
+            for ta in tareas:
+                lista.append({'id': ta.id, 'nombre': ta.archivo, 
+                    'extension_origen': ta.formato_origen,
+                    'extension_destino': ta.formato_destino,
+                    'estado': ta.estado})
 
-                count = 0
-                lista = []
-                for ta in tareas:
-                    lista.append({'id': ta.id, 'nombre': ta.archivo, 
-                        'extension_origen': ta.formato_origen,
-                        'extension_destino': ta.formato_destino,
-                        'estado': ta.estado})
+                if count >= max:
+                    break
+                else:
+                    count += 1
 
-                    if count >= max:
-                        break
-                    else:
-                        count += 1
-
-                return lista
-            else:
-                return f"El usuario {user_id} no tiene tareas registradas.", 400
+            return lista
         else:
-            return "No se suministro el iD del usuario a consultar.", 400
+            return f"El usuario {user_id} no tiene tareas registradas.", 400
 
 
     # @jwt_required((optional=True)
