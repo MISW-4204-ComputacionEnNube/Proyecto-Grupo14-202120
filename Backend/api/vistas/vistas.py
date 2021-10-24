@@ -413,7 +413,7 @@ class VistaTarea(Resource):
     """"""
 
     def get(self, id_task):
-        """Se obtiene una tarea con base en el id.
+        """Se obtiene una tarea con base en el id de la tarea.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X GET -H "Content-Type: multipart/form-data" 
@@ -529,6 +529,29 @@ class VistaTarea(Resource):
 # ----------------------------------------------------------------------------
 
 
+# end point: /api/files/<string:filename>
+class VistaUsuariosTarea(Resource):
+    """"""
+
+    def get(self, filename):
+        """Retorna el archivo relacionada a un nombre de archivo."""
+
+        # obtiene la última tarea cargada que tiene como nombre de archivo el
+        # pasado como parámetro de la función
+        tarea = Tarea.query.filter(Tarea.archivo.contains(filename)).\
+            order_by(Tarea.id.desc()).first()
+
+        # si la tarea ya fue procesada retorna el archivo convertido
+        if tarea.estado == "processed":
+            return tarea.ruta_archivo_destino
+
+        else:
+            return tarea.ruta_archivo_origen
+            
+
+# ----------------------------------------------------------------------------
+
+
 # end point: /api/run_tasks
 class VistaEjecutarTareas(Resource):
     """"""
@@ -546,15 +569,3 @@ class VistaEjecutarTareas(Resource):
         return CronConvert()
 
 
-
-
-# end point: /api/files/<string:filename>
-class VistaUsuariosTarea(Resource):
-    """"""
-
-    def get(self, filename):
-        """Retorna la tarea relacionada a un archivo."""
-
-        tarea = Tarea.query.filter(Tarea.archivo.contains(filename))
-        print(tarea, filename)
-        return tarea_schema.dump(tarea)
