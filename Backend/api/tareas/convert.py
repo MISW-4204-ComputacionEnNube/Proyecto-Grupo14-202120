@@ -27,9 +27,12 @@ __date__ = "2021-10-22 05:39"
 # ----------------------------------------------------------------------------
 
 
-def SendEmail(email: str):
+def SendEmail(email: str, mensaje: str) -> str:
     """Función que envía un mensaje por email."""
 
+    asunto = "Notificacion de Cloud Conversion Tool"
+
+    print(f"EMAIL: Destinatario -> {email}; Asunto -> {asunto}; Mensaje -> {mensaje}")
     return "Done"
 
 
@@ -56,7 +59,8 @@ def CronConvert() ->str:
             db.session.commit()
 
             # envia el mensaje al usuario
-            SendEmail(task.usuario.email)
+            mensaje = f"La tarea {task.id} fur procesada correctamente."
+            SendEmail(task.usuario.email, mensaje)
 
         else:
             print("Formato no admitido")
