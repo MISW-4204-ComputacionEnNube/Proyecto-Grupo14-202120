@@ -562,16 +562,21 @@ class VistaUsuariosTarea(Resource):
 
         # obtiene la ultima tarea cargada que tiene como nombre de archivo el
         # pasado como parametro de la funcion
-        tarea = Tarea.query.filter(Tarea.archivo.contains(filename)).\
-            order_by(Tarea.id.desc()).first()
+        if db.session.query(Tarea.query.\
+            filter(Tarea.archivo.contains(filename)).exists()).scalar():
 
-        # si la tarea ya fue procesada retorna el archivo convertido
-        if tarea.estado == "processed":
-            return tarea.ruta_archivo_destino
+            tarea = Tarea.query.filter(Tarea.archivo.contains(filename)).\
+                order_by(Tarea.id.desc()).first()
+
+            # si la tarea ya fue procesada retorna el archivo convertido
+            if tarea.estado == "processed":
+                return tarea.ruta_archivo_destino
+
+            else:
+                return tarea.ruta_archivo_origen
 
         else:
-            return tarea.ruta_archivo_origen
-            
+            return f"No existe una tarea sobre el archivo {filename}."            
 
 # ----------------------------------------------------------------------------
 
