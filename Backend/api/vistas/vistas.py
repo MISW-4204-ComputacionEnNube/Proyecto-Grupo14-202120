@@ -647,8 +647,12 @@ class VistaEjecutarTareas(Resource):
         # Init multiprocessing.Pool()
         pool = mp.Pool(numProc)
 
+        print(">>> Fecha de inicio principal: ", datetime.now())
+
         # inicia el multiprocesamiento
         result_objects = [pool.apply_async(Convert, args=([group])) for group in listgroup]
+
+        print(">>> Fecha de final principal: ", datetime.now())
 
         # result_objects is a list of pool.ApplyResult objects
         results = [r.get()[1] for r in result_objects]

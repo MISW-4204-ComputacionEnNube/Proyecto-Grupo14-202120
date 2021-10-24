@@ -8,6 +8,7 @@
 # ----------------------------------------------------------------------------
 
 import subprocess
+from datetime import datetime
 
 from ..modelos import Tarea, db, Usuario
 
@@ -44,6 +45,8 @@ def Convert(list_tasks: list) ->str:
 
     print(">>> list_tasks : ", list_tasks)
 
+    print(">>> Fecha de inicio: ", datetime.now())
+
     for id_task in list_tasks:
         # obtiene la tarea correspondiente
         task = Tarea.query.get(id_task)
@@ -68,5 +71,7 @@ def Convert(list_tasks: list) ->str:
             # envia el mensaje al usuario
             mensaje = f"La tarea {task.id} fue procesada correctamente."
             SendEmail(task.usuario.email, mensaje)
+
+    print(">>> Fecha de fin: ", datetime.now())
 
     return "Done"
