@@ -12,6 +12,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token, \
     get_jwt_identity
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import desc
 from datetime import datetime
 from operator import contains
 from werkzeug.utils import secure_filename
@@ -110,7 +111,17 @@ class VistaSignUp(Resource):
     """clase relacionada con la creación de usuario."""
 
     def post(self):
-        """Crea un nuevo usuario."""
+        """Crea un nuevo usuario.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X POST
+             -H "Content-Type: multipart/form-data" 
+             -F "username=s.salinasv" 
+             -F "email=s.salinasv@uniandes.edu.co" 
+             -F "password1=ABC123+-.#$%" 
+             -F "password2=ABC123+-.#$%" 
+             http://localhost:5000/api/auth/signup
+        """
 
         usuario = request.json["username"]
         password1 = request.json["password1"]
@@ -149,7 +160,22 @@ class VistaLogIn(Resource):
     """Clase relacionada con login."""
 
     def post(self):
-        """Inicio de sesion."""
+        """Inicio de sesion.
+    
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X POST
+             -H "Content-Type: multipart/form-data" 
+             -F "username=s.salinasv" 
+             -F "password=ABC123+-.#$%" 
+             http://localhost:5000/api/auth/login
+
+        o tambien:
+        curl -X POST
+             -H "Content-Type: multipart/form-data" 
+             -F "username=s.salinasv@uniandes.edu.co" 
+             -F "password=ABC123+-.#$%" 
+             http://localhost:5000/api/auth/login
+        """
 
         username = request.json["username"]
         password = request.json["password"]
@@ -199,62 +225,120 @@ class VistaLogIn(Resource):
 class VistaTareas(Resource):
     """"""
 
+    def get(self, user_id, max=100, order=0):
+        """Retorna todas las tareas.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X GET 
+             -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer {..token..}"
+             -F "user_id=1"
+             -F "max=100"
+             -F "order=0"
+             http://localhost:5000/api/tasks
+        """
+
+        # valida que se haya pasado el id del usuario
+        if user_id is not None:
+
+            # obtiene todas las tareas del usuario
+            tareas = Tarea.query(
+                        Tarea.id,
+                        Tarea.archivo.label('nombre'),
+                        Tarea.formato_origen.label('extension_origen'),
+                        Tarea.formato_destino.label('extension_destino'),
+                        Tarea.estado).filter(Tarea.usuario_id==user_id)
+
+            if len(tareas) > 0:
+
+                # ordena los resultados
+                if order is not None:
+                    try:
+                        order = int(str(order))
+                    except:
+                        return "El valor pasado en 'order' no corresponde a un " \
+                            "dato numérico.", 400
+
+                    if order not in (0, 1):
+                        return "El valor numerico pasado en 'order' debe ser " \
+                            "0 o 1.", 400
+
+                    if order == 1:
+                        # ordena las tareas de forma descendente
+                        tareas = tareas.order_by(desc(Tarea.id))
+
+                # trae un grupo de resultados
+                if max is not None:
+                    try:
+                        max = int(str(max))
+                    except:
+                        return "El valor pasado en 'max' no corresponde a un " \
+                            "dato numérico.", 400
+
+                    if max < 1:
+                        return "El valor pasado en 'max' debe ser un numero " \
+                            "entero positivo.", 400
+
+                count = 0
+                lista = []
+                for ta in tareas:
+                    lista.append(tarea_schema.dump(ta))
+                    if count >= max:
+                        break
+                    else:
+                        count += 1
+
+                return lista
+            else:
+                return f"El usuario {user_id} no tiene tareas registradas.", 400
+        else:
+            return "No se suministró el ID del usuario a consultar.", 400
+
+
     def post(self):
         """Se crea una nueva tarea.
         
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer {..token..}" 
-             -F "file=@/home/estudiante/music/tina-guo.mp3;type=audio/mpeg"  
-             -F "destino=wav" 
-             -F "usuario_id=1" http://localhost:5000/api/tasks
+             -F "fileName=@/home/estudiante/music/tina-guo.mp3;type=audio/mpeg"  
+             -F "newFormat=wav" 
+             -F "user_id=1" http://localhost:5000/api/tasks
         """
 
 
         # obtiene el archivo enviado
         try:
-            f = request.files['file']
+            f = request.files['fileName']
         except:
             # no se envio el archivo, por ende no se crea la tarea
-            msg = "No se cargo el archivo"
-            flash(msg)
-            return msg, 402
+            return "No se cargo el archivo", 400
 
         # obtiene el tipo de archivo al que se transformara
         try:
-            extension_destino = request.form['destino']
+            extension_destino = request.form['newFormat']
         except:
             # no se envio la extension de destino, por ende no se crea la tarea
-            msg = "No se definio la extension de destino"
-            flash(msg)
-            return msg, 402
+            return "No se definio la extension de destino", 400
 
         # obtiene el identificador del usuario
         try:
-            usuario_id = request.form["usuario_id"]
+            usuario_id = request.form["user_id"]
         except:
             # no se envio la extension de destino, por ende no se crea la tarea
-            msg = "No se reporto el id del usuario"
-            flash(msg)
-            return msg, 402
+            return "No se reporto el id del usuario", 400
 
         if f is None:
             # no se envio el archivo, por ende no se crea la tarea
-            msg = "No se cargo el archivo"
-            flash(msg)
-            return msg, 402
+            return "No se cargo el archivo", 400
 
         if extension_destino is None:
             # no se envio la extension de destino, por ende no se crea la tarea
-            msg = "No se definio la extension de destino"
-            flash(msg)
-            return msg, 402
+            return "No se definio la extension de destino", 400
 
         if usuario_id is None:
             # no se envio la extension de destino, por ende no se crea la tarea
-            msg = "No se reporto el id del usuario"
-            flash(msg)
-            return msg, 402
+            return "No se reporto el id del usuario", 400
 
         # obtiene el nombre del archivo
         archivo = secure_filename(f.filename)
@@ -268,23 +352,17 @@ class VistaTareas(Resource):
         # valida que el nombre de archivo tenga base
         if len(base_archivo) == 0:
             # nombre de archivo sin base
-            msg = "Nombre de archivo sin base"
-            flash(msg)
-            return msg, 402
+            return "Nombre de archivo sin base", 400
 
         # valida la extension del archivo de origen
         if extension_origen not in formatos:
             # el formato del archivo no es admitido
-            msg = "El formato del archivo no es admitido"
-            flash(msg)
-            return msg, 402
+            return "El formato del archivo no es admitido", 400
 
         # valida la extension de destino
         if extension_destino not in formatos:
             # el formato de destino no es admitido
-            msg = "El formato de destino no es admitido"
-            flash(msg)
-            return msg, 402
+            return "El formato de destino no es admitido", 400
 
         # obtiene la fecha actual
         fecha = datetime.now()
@@ -307,9 +385,7 @@ class VistaTareas(Resource):
             # almacena el archivo
             f.save(ruta_archivo_origen)
         except:
-            msg = "Error al almacenar el archivo"
-            flash(msg)
-            return msg, 402
+            return "Error al almacenar el archivo", 400
 
         # crea el registro en la base de datos
         nueva_tarea = Tarea(
@@ -326,17 +402,6 @@ class VistaTareas(Resource):
         db.session.commit()
 
         return tarea_schema.dump(nueva_tarea)
-
-    def get(self):
-        """Retorna todas las tareas.
-
-        Esta funcion se llama usando CURL desde la linea de comandos asi:
-        curl -X GET -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer {..token..}" 
-             http://localhost:5000/api/tasks
-        """
-
-        return [tarea_schema.dump(ta) for ta in Tarea.query.all()]
 
 
 # end point: /api/run_tasks
