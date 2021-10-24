@@ -304,28 +304,25 @@ class VistaTareas(Resource):
             return f"El usuario {user_id} no tiene tareas registradas.", 400
 
 
-    # @jwt_required((optional=True)
+    @jwt_required()
     def post(self):
         """Se crea una nueva tarea.
         
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer {..token..}" 
+             -H "Authorization: Bearer ..token.." 
              -F "fileName=@/home/estudiante/music/tina-guo.mp3;type=audio/mpeg"  
              -F "newFormat=wav" 
-             -F "user_id=1" 
              http://localhost:5000/api/tasks
         """
 
-        # obtiene el identificador del usuario
-        try:
-            usuario_id = request.form["user_id"]
-        except:
-            # no se envio la extension de destino, por ende no se crea la tarea
-            return "No se reporto el id del usuario.", 400
+        # obtiene los datos del usuario
+        current_user_id = get_jwt_identity()
+        user = Usuario.query.get(current_user_id)
+        user_id = user.id
 
         # valida que el usuario exista
-        if db.session.query(Usuario.query.filter(Usuario.id==usuario_id).exists()).scalar():
+        if db.session.query(Usuario.query.filter(Usuario.id==user_id).exists()).scalar():
 
             # obtiene el archivo enviado
             try:
@@ -409,7 +406,7 @@ class VistaTareas(Resource):
                 ruta_archivo_destino = ruta_archivo_destino,
                 fecha = fecha,
                 estado = 'uploaded',
-                usuario_id = usuario_id)
+                usuario_id = user_id)
 
             db.session.add(nueva_tarea)
             db.session.commit()
@@ -417,7 +414,7 @@ class VistaTareas(Resource):
             return tarea_schema.dump(nueva_tarea)
 
         else:
-            return f"Usuario {usuario_id} no existe.", 400
+            return f"Usuario {user_id} no existe.", 400
 
 # ----------------------------------------------------------------------------
 
@@ -426,33 +423,46 @@ class VistaTareas(Resource):
 class VistaTarea(Resource):
     """Clase relacionada con una tarea en particular."""
 
-    # @jwt_required((optional=True)
+    @jwt_required()
     def get(self, id_task):
         """Se obtiene una tarea con base en el id de la tarea.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X GET -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer {..token..}" 
+             -H "Authorization: Bearer ..token.." 
              http://localhost:5000/api/tasks/1
         """
 
+        # obtiene los datos del usuario
+        current_user_id = get_jwt_identity()
+        user = Usuario.query.get(current_user_id)
+        user_id = user.id
+
         # determina si existe una tarea con ese id
-        if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).\
-            scalar():
+        if db.session.query(Tarea.query.filter(Tarea.id==id_task, 
+            Tarea.usuario_id==user_id).exists()).scalar():
+
             return tarea_schema.dump(Tarea.query.get_or_404(id_task))
         else:
-            return f"No existe la tarea {id_task}."
 
-    # @jwt_required((optional=True)
+            return f"La tarea {id_task} no existe para el usuario {user_id}."
+
+
+    @jwt_required()
     def put(self, id_task):
         """Se actualiza una tarea.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X DELETE -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer {..token..}"
+             -H "Authorization: Bearer ..token.."
              -F "newFormat=aac"
              http://localhost:5000/api/tasks/1
         """
+
+        # obtiene los datos del usuario
+        current_user_id = get_jwt_identity()
+        user = Usuario.query.get(current_user_id)
+        user_id = user.id
 
         # obtiene los datos como parametros de la solicitud
         newFormat = request.form['newFormat']
@@ -477,8 +487,8 @@ class VistaTarea(Resource):
             return "El formato de destino no es admitido.", 400
 
         # determina si existe una tarea con ese id
-        if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).\
-            scalar():
+        if db.session.query(Tarea.query.filter(Tarea.id==id_task, 
+            Tarea.usuario_id==user_id).exists()).scalar():
 
             # obtiene la tarea con el id
             tarea = Tarea.query.get(id_task)
@@ -520,10 +530,11 @@ class VistaTarea(Resource):
             return "La tarea fue actualizada", 200
 
         else:
-            return "No existe la tarea a actualizar.", 400
+
+            return f"La tarea {id_task} no existe para el usuario {user_id}."
 
 
-    # @jwt_required((optional=True)
+    @jwt_required()
     def delete(self, id_task):
         """Se elimina el archivo.
 
@@ -533,7 +544,14 @@ class VistaTarea(Resource):
              http://localhost:5000/api/tasks/1
         """
 
-        if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).scalar():
+        # obtiene los datos del usuario
+        current_user_id = get_jwt_identity()
+        user = Usuario.query.get(current_user_id)
+        user_id = user.id
+
+        # determina si existe una tarea con ese id
+        if db.session.query(Tarea.query.filter(Tarea.id==id_task, 
+            Tarea.usuario_id==user_id).exists()).scalar():
 
             # obtiene la tarea
             tarea = Tarea.query.get(id_task)
@@ -552,7 +570,8 @@ class VistaTarea(Resource):
             return "La tarea fue eliminada", 200
 
         else:
-            return "No existe la tarea a eliminar", 400
+
+            return f"La tarea {id_task} no existe para el usuario {user_id}."
 
 
 # ----------------------------------------------------------------------------
@@ -562,23 +581,29 @@ class VistaTarea(Resource):
 class VistaUsuariosTarea(Resource):
     """Clase relacionada con la entrega de archivos al usuario"""
 
-    # @jwt_required((optional=True)
+    @jwt_required()
     def get(self, filename):
         """Retorna el ultimo archivo relacionada a un nombre de archivo.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X DELETE -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer {..token..}" 
+             -H "Authorization: Bearer ..token.." 
              http://localhost:5000/api/files/tina-guo.mp3
         """
+
+        # obtiene los datos del usuario
+        current_user_id = get_jwt_identity()
+        user = Usuario.query.get(current_user_id)
+        user_id = user.id
 
         # obtiene la ultima tarea cargada que tiene como nombre de archivo el
         # pasado como parametro de la funcion
         if db.session.query(Tarea.query.\
-            filter(Tarea.archivo.contains(filename)).exists()).scalar():
+            filter(Tarea.archivo.contains(filename), 
+            Tarea.usuario_id==user_id).exists()).scalar():
 
-            tarea = Tarea.query.filter(Tarea.archivo.contains(filename)).\
-                order_by(Tarea.id.desc()).first()
+            tarea = Tarea.query.filter(Tarea.archivo.contains(filename), 
+            Tarea.usuario_id==user_id).order_by(Tarea.id.desc()).first()
 
             # si la tarea ya fue procesada retorna el archivo convertido
             if tarea.estado == "processed":
@@ -598,7 +623,9 @@ class VistaUsuariosTarea(Resource):
             	    return str(e)
 
         else:
-            return f"No existe una tarea sobre el archivo {filename}."            
+
+            return f"El archivo {filename} no existe para el usuario {user_id}."
+
 
 # ----------------------------------------------------------------------------
 
@@ -613,7 +640,7 @@ class VistaEjecutarTareas(Resource):
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X POST -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer {..token..}" 
+             -H "Authorization: Bearer ..token.." 
              http://localhost:5000/api/run_tasks
         """
 
