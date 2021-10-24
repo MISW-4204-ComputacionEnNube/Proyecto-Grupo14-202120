@@ -247,7 +247,7 @@ class VistaLogIn(Resource):
 class VistaTareas(Resource):
     """Clase relacionada con las tareas en general."""
 
-    # @jwt_required((optional=True)
+    @jwt_required()
     def get(self):
         """Retorna todas las tareas.
 
@@ -258,8 +258,12 @@ class VistaTareas(Resource):
              "http://localhost:5000/api/tasks?user_id=1&max=100&order=0"
         """
 
+        current_user_id = get_jwt_identity()
+        user = Usuario.filter.get(current_user_id)
+        user_id = user.id
+
         # obtiene los datos como parametros de la solicitud
-        user_id = request.args.get('user_id', default = 0, type = int)
+        # user_id = request.args.get('user_id', default = 0, type = int)
         max = request.args.get('max', default = 100, type = int)
         order = request.args.get('order', default = 0, type = int)
 
