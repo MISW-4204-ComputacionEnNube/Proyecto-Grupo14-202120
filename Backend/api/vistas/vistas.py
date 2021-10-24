@@ -257,9 +257,6 @@ class VistaTareas(Resource):
              "http://localhost:5000/api/tasks?user_id=1&max=100&order=0"
         """
 
-        current_user = get_jwt_identity()
-        print(current_user)
-
         # obtiene los datos como parametros de la solicitud
         user_id = request.args.get('user_id', default = 0, type = int)
         max = request.args.get('max', default = 100, type = int)
