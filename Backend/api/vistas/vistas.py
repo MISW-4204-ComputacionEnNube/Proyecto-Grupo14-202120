@@ -260,35 +260,36 @@ class VistaTareas(Resource):
         max = request.args.get('max', default = 100, type = int)
         order = request.args.get('order', default = 0, type = int)
 
+        # valida el dato entregado
+        if max < 1:
+            return "El valor pasado en 'max' debe ser un numero " \
+                "entero positivo.", 400
+
+        # valida el dato entregado
+        if order not in (0, 1):
+            return "El valor numerico pasado en 'order' debe ser " \
+                "0 o 1.", 400
+
         # valida que se haya pasado el id del usuario
         if user_id > 0:
 
-            # obtiene todas las tareas del usuario
-            tareas = Tarea.query(
-                        Tarea.id,
-                        Tarea.archivo.label('nombre'),
-                        Tarea.formato_origen.label('extension_origen'),
-                        Tarea.formato_destino.label('extension_destino'),
-                        Tarea.estado).filter(Tarea.usuario_id==user_id)
+            # obtiene las tareas asociadas al usuario
+            tareas = Tarea.query.filter(Tarea.usuario_id==user_id)
 
             if len(tareas) > 0:
-
-                if order not in (0, 1):
-                    return "El valor numerico pasado en 'order' debe ser " \
-                        "0 o 1.", 400
 
                 if order == 1:
                     # ordena las tareas de forma descendente
                     tareas = tareas.order_by(desc(Tarea.id))
 
-                if max < 1:
-                    return "El valor pasado en 'max' debe ser un numero " \
-                        "entero positivo.", 400
-
                 count = 0
                 lista = []
                 for ta in tareas:
-                    lista.append(tarea_schema.dump(ta))
+                    lista.append({'id': ta.id, 'nombre': ta.archivo, 
+                        'extension_origen': ta.formato_origen,
+                        'extension_destino': ta.formato_destino,
+                        'estado': ta.estado})
+
                     if count >= max:
                         break
                     else:
