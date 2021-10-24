@@ -350,10 +350,6 @@ class VistaTareas(Resource):
                 # no se envio la extension de destino, por ende no se crea la tarea
                 return "No se definio la extension de destino.", 400
 
-            if usuario_id is None:
-                # no se envio la extension de destino, por ende no se crea la tarea
-                return "No se reporto el id del usuario.", 400
-
             # obtiene el nombre del archivo
             archivo = secure_filename(f.filename)
             # obtiene la extension del archivo en minuscula
