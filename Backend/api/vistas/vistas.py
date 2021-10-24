@@ -435,14 +435,17 @@ class VistaTarea(Resource):
         return tarea_schema.dump(Tarea.query.get_or_404(id_task))
 
 
-    def put(self, id_task, newFormat):
+    def put(self, id_task):
         """Se actualiza una tarea.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X DELETE -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer {..token..}"
-             http://localhost:5000/api/tasks/1
+             http://localhost:5000/api/tasks/1@newFormat=aac
         """
+
+        # obtiene los datos como parametros de la solicitud
+        newFormat = request.args.get('newFormat', default = "mp3", type = str)
 
         # obtiene el tipo de archivo al que se transformara
         try:
@@ -464,10 +467,15 @@ class VistaTarea(Resource):
             return "El formato de destino no es admitido.", 400
 
         # determina si existe una tarea con ese id
-        if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).scalar():
+        if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).\
+            scalar():
 
             # obtiene la tarea con el id
             tarea = Tarea.query.get(id_task)
+
+            if extension_destino == tarea.formato_destino:
+                return "No hay cambio en el formato de destino. " \
+                    "Tarea no actualizada.", 200
 
             # obtiene la fecha actual
             fecha = datetime.now()
@@ -502,7 +510,7 @@ class VistaTarea(Resource):
             return "La tarea fue actualizada", 200
 
         else:
-            return "No existe la tarea a eliminar.", 400
+            return "No existe la tarea a actualizar.", 400
 
 
     def delete(self, id_task):
