@@ -621,12 +621,34 @@ class VistaEjecutarTareas(Resource):
         # obtiene los datos como parametros de la solicitud
         numProc = request.args.get('numProc', default = mp.cpu_count(), type = int)
 
+        if numProc < 1:
+            numProc = 1
+
+        # obtiene la lista de identificadores de las tareas por procesar
+        lista = []
+        for task in Tarea.query.filter(Tarea.estado=='uploaded'):
+            lista.append(task.id)
+
+        if len(lista) == 0:
+            return "No hay tareas por procesar.", 200
+
+        # calcula el numero de identificadores por grupo
+        nreg = round(len(lista)/numProc, 0) 
+
+        # divide la lista en grupos
+        listgroup = [[] for i in range(numProc)]
+        group = 0
+        for item in lista:
+            listgroup[group].append(item)
+            group += 1
+            if group >= numProc:
+                group = 0
+
         # Init multiprocessing.Pool()
         pool = mp.Pool(numProc)
 
         # inicia el multiprocesamiento
-        results = [pool.apply(Convert, args=(task.id)) for task in Tarea.\
-            query.filter(Tarea.estado=='uploaded').order_by(Tarea.fecha)]
+        results = [pool.apply(Convert, args=(group)) for group in listgroup]
 
         # cierra el pool
         pool.close()
