@@ -441,11 +441,12 @@ class VistaTarea(Resource):
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -X DELETE -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer {..token..}"
-             http://localhost:5000/api/tasks/1@newFormat=aac
+             -F "newFormat=aac"
+             http://localhost:5000/api/tasks/1
         """
 
         # obtiene los datos como parametros de la solicitud
-        newFormat = request.args.get('newFormat', default = "mp3", type = str)
+        newFormat = request.form['newFormat']
 
         # obtiene el tipo de archivo al que se transformara
         try:
