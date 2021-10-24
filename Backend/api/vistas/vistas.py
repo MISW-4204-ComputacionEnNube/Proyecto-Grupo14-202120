@@ -123,10 +123,10 @@ class VistaSignUp(Resource):
              http://localhost:5000/api/auth/signup
         """
 
-        usuario = request.json["username"]
-        password1 = request.json["password1"]
-        password2 = request.json["password2"]
-        email = request.json["email"]
+        usuario = request.form["username"]
+        password1 = request.form["password1"]
+        password2 = request.form["password2"]
+        email = request.form["email"]
         
         # valida el password
         err, password = ValidarPassword(password1, password2)
@@ -177,8 +177,8 @@ class VistaLogIn(Resource):
              http://localhost:5000/api/auth/login
         """
 
-        username = request.json["username"]
-        password = request.json["password"]
+        username = request.form["username"]
+        password = request.form["password"]
 
         if username is not None:
             # verifica que el usuario y password existan en la base de datos
