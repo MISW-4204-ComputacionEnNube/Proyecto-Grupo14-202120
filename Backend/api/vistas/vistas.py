@@ -648,10 +648,16 @@ class VistaEjecutarTareas(Resource):
         pool = mp.Pool(numProc)
 
         # inicia el multiprocesamiento
-        results = [pool.apply(Convert, args=(group)) for group in listgroup]
+        result_objects = [pool.apply_async(Convert, args=([group])) for group in listgroup]
+
+        # result_objects is a list of pool.ApplyResult objects
+        results = [r.get()[1] for r in result_objects]
 
         # cierra el pool
         pool.close()
+
+        pool.join()
+        print(results[:10])
 
         return results
 
