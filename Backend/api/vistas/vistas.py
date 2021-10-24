@@ -7,7 +7,7 @@
 
 # ----------------------------------------------------------------------------
 
-from flask import request, flash
+from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token, \
     get_jwt_identity
@@ -20,9 +20,8 @@ from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy
 import subprocess
 
-from ..tareas import registrar_log
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
-from ..tareas.convert import CronConvert, SendEmail
+from ..tareas import CronConvert, SendEmail
 
 # ----------------------------------------------------------------------------
 
