@@ -51,7 +51,7 @@ formatos = ['aac', 'mp3', 'ogg', 'wav', 'wma']
 def ValidarEmail(email: str) -> tuple:
     """Funcion que valida el email."""
 
-    if email not in None:
+    if email is not None:
         try:
             # Valida el email
             valid = validate_email(email)
