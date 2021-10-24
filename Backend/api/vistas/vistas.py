@@ -432,8 +432,12 @@ class VistaTarea(Resource):
              http://localhost:5000/api/tasks/1
         """
 
-        return tarea_schema.dump(Tarea.query.get_or_404(id_task))
-
+        # determina si existe una tarea con ese id
+        if db.session.query(Tarea.query.filter(Tarea.id==id_task).exists()).\
+            scalar():
+            return tarea_schema.dump(Tarea.query.get_or_404(id_task))
+        else:
+            return f"No existe la tarea {id_task}."
 
     def put(self, id_task):
         """Se actualiza una tarea.
