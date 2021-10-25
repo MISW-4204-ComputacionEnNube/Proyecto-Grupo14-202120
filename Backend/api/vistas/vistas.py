@@ -453,7 +453,7 @@ class VistaTarea(Resource):
         """Se actualiza una tarea.
 
         Esta funcion se llama usando CURL desde la linea de comandos asi:
-        curl -X DELETE -H "Content-Type: multipart/form-data" 
+        curl -X PUT -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer ..token.."
              -F "newFormat=aac"
              http://localhost:5000/api/tasks/1
