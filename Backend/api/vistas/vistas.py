@@ -516,7 +516,8 @@ class VistaTarea(Resource):
 
             # elimina el archivo previamente convertido
             if tarea.estado == "processed":
-                subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
+                # subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
+                os.remove(tarea.ruta_archivo_destino)
 
             # actualiza la tarea
             tarea.formato_destino = extension_destino
