@@ -23,6 +23,7 @@ from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy
 import subprocess
 import multiprocessing as mp
+import os
 
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
 from ..tareas import Convert, SendSlack
@@ -515,7 +516,8 @@ class VistaTarea(Resource):
 
             # elimina el archivo previamente convertido
             if tarea.estado == "processed":
-                subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
+                # subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
+                os.remove(tarea.ruta_archivo_destino)
 
             # actualiza la tarea
             tarea.formato_destino = extension_destino
@@ -557,11 +559,13 @@ class VistaTarea(Resource):
             tarea = Tarea.query.get(id_task)
 
             # elimina el archivo original
-            subprocess.call(['rm', '-f', tarea.ruta_archivo_origen])
+            # subprocess.call(['rm', '-f', tarea.ruta_archivo_origen])
+            os.remove(tarea.ruta_archivo_origen)
 
             # elimina el archivo convertido
             if tarea.estado == "processed":
-                subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
+                # subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
+                os.remove(tarea.ruta_archivo_destino)
 
             # elimina el registro en la base de datos
             db.session.delete(tarea)
