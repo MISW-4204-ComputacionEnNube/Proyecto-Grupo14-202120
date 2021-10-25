@@ -25,7 +25,7 @@ import subprocess
 import multiprocessing as mp
 
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
-from ..tareas import Convert, SendEmail
+from ..tareas import Convert, SendSlack
 
 # ----------------------------------------------------------------------------
 
@@ -525,7 +525,7 @@ class VistaTarea(Resource):
 
             # envia el mensaje al usuario informando de la actualizacion
             mensaje = f"Se actualizo exitosamente la tarea {id_task}."
-            SendEmail(tarea.usuario.email, mensaje)
+            SendSlack(mensaje)
 
             return "La tarea fue actualizada", 200
 

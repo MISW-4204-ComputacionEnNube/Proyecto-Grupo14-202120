@@ -9,6 +9,7 @@
 
 import subprocess
 from datetime import datetime
+import requests
 
 from ..modelos import Tarea, db, Usuario
 
@@ -27,13 +28,17 @@ __date__ = "2021-10-22 05:39"
 
 # ----------------------------------------------------------------------------
 
+def SendSlack(mensaje: str) -> str:
+    """Función que envía un mensaje por slack."""
 
-def SendEmail(email: str, mensaje: str) -> str:
-    """Función que envía un mensaje por email."""
+    url_notificacion = "https://hooks.slack.com/services/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"
 
     asunto = "Notificacion de Cloud Conversion Tool"
 
-    print(f"EMAIL: Destinatario -> {email}; Asunto -> {asunto}; Mensaje -> {mensaje}")
+    data = { "text": f"{mensaje}"}
+
+    r = requests.post(url = url_notificacion, json=data )
+
     return "Done"
 
 
@@ -70,7 +75,7 @@ def Convert(list_tasks: list) ->str:
 
             # envia el mensaje al usuario
             mensaje = f"La tarea {task.id} fue procesada correctamente."
-            SendEmail(task.usuario.email, mensaje)
+            SendSlack(mensaje)
 
     print(">>> Fecha de fin: ", datetime.now())
 
