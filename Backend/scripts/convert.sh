@@ -53,16 +53,19 @@ do
     status=$?
 
     # determina si fue exitosa la conversion
-    if test $status -eq 0 && -s $ruta_archivo_destino
+    if test $status -eq 0
     then
+        if test -s $ruta_archivo_destino
+        then
 
-        # actualiza el estado de la tarea
-        consulta="update tarea set estado='processed' where id=$id;"
-        PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"
+            # actualiza el estado de la tarea
+            consulta="update tarea set estado='processed' where id=$id;"
+            PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"
 
-        # envia un mensaje al usuario
-        # TODO
-        
+            # envia un mensaje al usuario
+            # TODO
+            
+        fi
     fi
 done
 
