@@ -46,7 +46,7 @@ __date__ = "2021-10-19 15:46"
 
 usuario_schema = UsuarioSchema()
 tarea_schema = TareaSchema()
-ruta = "/home/estudiante/Proyecto-Grupo14-202120/Backend/files"
+ruta = "/home/ubuntu/Proyecto-Grupo14-202120/Backend/files"
 formatos = ['aac', 'mp3', 'ogg', 'wav', 'wma']
 
 
@@ -316,7 +316,7 @@ class VistaTareas(Resource):
         Esta funcion se llama usando CURL desde la linea de comandos asi:
         curl -H "Content-Type: multipart/form-data" 
              -H "Authorization: Bearer ..token.." 
-             -F "fileName=@/home/estudiante/music/tina-guo.mp3;type=audio/mpeg"  
+             -F "fileName=@/home/ubuntu/music/tina-guo.mp3;type=audio/mpeg"  
              -F "newFormat=wav" 
              http://localhost:5000/api/tasks
         """
