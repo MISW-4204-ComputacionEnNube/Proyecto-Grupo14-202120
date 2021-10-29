@@ -77,9 +77,6 @@ do
             PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"
 
             # envia un mensaje al usuario
-            subject="Notificacion de Cloud Conversion Tool"
-            body="La tarea, que consistia en convertir el archivo $archivo del formato $formato_origen al formato $formato_destino y que fue activada la fecha $fecha, fue ejecutada correctamente y la conversion del archivo curso exitosamente."
-            body=`echo -e "Hola $usuario,\n\n"$body"\n\nCordialmente,\n\n\nCloud Conversion Tool"`
             # encripta el nombre de usuario
             esmtp_username=`echo -n $smtp_username | openssl enc -base64`
             esmtp_password=`echo -n $smtp_password | openssl enc -base64`
@@ -95,9 +92,18 @@ do
             #echo "X-SES-CONFIGURATION-SET: ConfigSet" >> $tmp
             echo "From: $from_name <$from>" >> $tmp
             echo "To: $email" >> $tmp
-            echo "Subject: $subject" >> $tmp
+            echo "Subject: Notificacion de Cloud Conversion Tool" >> $tmp
             echo "" >> $tmp
-            echo "$body." >> $tmp
+            echo "Hola $usuario" >> $tmp
+            echo "" >> $tmp
+            echo "" >> $tmp
+            echo "La tarea, que consistia en convertir el archivo $archivo del formato $formato_origen al formato $formato_destino y que fue activada la fecha $fecha, fue ejecutada correctamente y la conversion del archivo curso exitosamente." >> $tmp
+            echo "" >> $tmp
+            echo "" >> $tmp
+            echo "Cordialmente," >> $tmp
+            echo "" >> $tmp
+            echo "Cloud Conversion Tool" >> $tmp
+            echo "" >> $tmp
             echo "." >> $tmp
             echo "QUIT" >> $tmp
             
