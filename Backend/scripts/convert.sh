@@ -28,10 +28,6 @@ smtp_password="BGK3EwVotaGornWSAYLBtr23lbOzKRo+r+fYaO944RcI"
 smtp_endpoint="email-smtp.us-east-1.amazonaws.com"
 smtp_port=587
 
-subject="Notificacion de conversion"
-body="Tarea de conversion ejecutada exitosamente"
-
-
 # Obtiene las credenciales de conexion a la base de datos
 credenciales="/home/ubuntu/Proyecto-Grupo14-202120/Backend/api/credenciales.json"
 host=`grep '"host"' $credenciales | cut -d '"' -f 4`
@@ -44,7 +40,7 @@ port=`grep '"port"' $credenciales | cut -d ':' -f 2`
 conversor="/usr/bin/ffmpeg -i "
 
 # hace ciclo por las tareas que estan pendientes por convertir
-consulta="select tarea.id, tarea.ruta_archivo_origen, tarea.ruta_archivo_destino, usuario.email from tarea, usuario where tarea.usuario_id=usuario.id and tarea.estado='uploaded';"
+consulta="select tarea.id, tarea.ruta_archivo_origen, tarea.ruta_archivo_destino, usuario.email, tarea.archivo, tarea.formato_origen, tarea.formato_destino, tarea.fecha from tarea, usuario where tarea.usuario_id=usuario.id and tarea.estado='uploaded';"
 
 for item in `PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"`
 do
@@ -57,6 +53,11 @@ do
     ruta_archivo_origen=`echo $item | cut -d '|' -f 2`
     ruta_archivo_destino=`echo $item | cut -d '|' -f 3`
     email=`echo $item | cut -d '|' -f 4`
+    archivo=`echo $item | cut -d '|' -f 4`
+    formato_origen=`echo $item | cut -d '|' -f 4`
+    formato_destino=`echo $item | cut -d '|' -f 4`
+    fecha=`echo $item | cut -d '|' -f 4`
+
 
     # convierte el archivo
     $conversor $ruta_archivo_origen $ruta_archivo_destino
@@ -75,11 +76,8 @@ do
             PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"
 
             # envia un mensaje al usuario
-            # TODO
-            # user smtp: ses-smtp-user.20211029-071610
-            # Nombre de usuario de SMTP: AKIA2VWXL5JUYXVHHU65
-            # Contraseña de SMTP: BGK3EwVotaGornWSAYLBtr23lbOzKRo+r+fYaO944RcI
-
+            subject="Notificacion de conversion tarea $id"
+            body="La tarea $id, que consista en convertir el archivo $archivo del formato $formato_origen al formato $formato_destino y fue activada la fecha $fecha, fue ejecutada correctaamente y la conversion del archivo curso exitosamente"
             # encripta el nombre de usuario
             esmtp_username=`echo -n $smtp_username | openssl enc -base64`
             esmtp_password=`echo -n $smtp_password | openssl enc -base64`
@@ -102,7 +100,7 @@ do
             echo "QUIT" >> $tmp
             
             # envia el correo
-            openssl s_client -crlf -quiet -starttls smtp -connect $smtp_endpoint:$smtp_port < $tmp
+            openssl s_client -crlf -quiet -starttls smtp -connect $smtp_endpoint:$smtp_port < $tmp &
 
         fi
     fi
