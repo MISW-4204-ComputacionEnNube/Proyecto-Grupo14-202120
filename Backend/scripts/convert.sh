@@ -40,7 +40,7 @@ port=`grep '"port"' $credenciales | cut -d ':' -f 2`
 conversor="/usr/bin/ffmpeg -i "
 
 # hace ciclo por las tareas que estan pendientes por convertir
-consulta="select tarea.id, tarea.ruta_archivo_origen, tarea.ruta_archivo_destino, usuario.email, tarea.archivo, tarea.formato_origen, tarea.formato_destino, tarea.fecha, usuario.usuario from tarea, usuario where tarea.usuario_id=usuario.id and tarea.estado='uploaded';"
+consulta="select tarea.id, tarea.ruta_archivo_origen, tarea.ruta_archivo_destino, usuario.email, tarea.archivo, tarea.formato_origen, tarea.formato_destino, to_char(tarea.fecha, 'YYYY-MM-DD_HH24:MI:SS'), usuario.usuario from tarea, usuario where tarea.usuario_id=usuario.id and tarea.estado='uploaded';"
 
 for item in `PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"`
 do
