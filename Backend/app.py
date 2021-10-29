@@ -14,7 +14,7 @@ from flask_cors import CORS
 
 from api.modelos import db
 from api.vistas import VistaSignUp, VistaTarea, VistaTareas, \
-    VistaUsuariosTarea, VistaLogIn, VistaEjecutarTareas
+    VistaUsuariosTarea, VistaLogIn
 
 # ----------------------------------------------------------------------------
 
@@ -27,7 +27,7 @@ __license__ = "GPLv3"
 __version__ = "1.0.0"
 __email__ = "s.salinas@uniandes.edu.co"
 __status__ = "Dev"
-__date__ = "2021-10-19 15:38"
+__date__ = "2021-10-29 05:29"
 
 # ----------------------------------------------------------------------------
 
@@ -47,7 +47,6 @@ api.add_resource(VistaLogIn, '/api/auth/login')
 api.add_resource(VistaTareas, '/api/tasks')
 api.add_resource(VistaTarea, '/api/tasks/<int:id_task>')
 api.add_resource(VistaUsuariosTarea, '/api/files/<string:filename>')
-api.add_resource(VistaEjecutarTareas, '/api/run_tasks')
 
 jwt = JWTManager(app)
 

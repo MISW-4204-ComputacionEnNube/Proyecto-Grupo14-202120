@@ -24,7 +24,7 @@ __license__ = "GPLv3"
 __version__ = "1.0.0"
 __email__ = "s.salinas@uniandes.edu.co"
 __status__ = "Dev"
-__date__ = "2021-10-22 05:39"
+__date__ = "2021-10-29 05:30"
 
 # ----------------------------------------------------------------------------
 
@@ -45,38 +45,10 @@ def SendSlack(mensaje: str) -> str:
 # ----------------------------------------------------------------------------
 
 
-def Convert(list_tasks: list) ->str:
-    """Funcion que convierte el archivo de la lista de tareas."""
+def SendEmail(mensaje: str, user_id: int) -> str:
+    """Función que envía un mensaje por email."""
 
-    print(">>> list_tasks : ", list_tasks)
-
-    print(">>> Fecha de inicio: ", datetime.now())
-
-    for id_task in list_tasks:
-        # obtiene la tarea correspondiente
-        task = Tarea.query.get(id_task)
-
-        # utiliza ffmpeg para la conversión siempre y cuando sea de formato
-        # 'aac', 'mp3', 'ogg', 'wav', 'wma'.
-        formato_ffmpeg = ['aac', 'mp3', 'ogg', 'wav', 'wma']
-
-        if task.formato_origen in formato_ffmpeg and \
-            task.formato_destino in formato_ffmpeg:
-
-            print(">>> Procesando archivo : ", task.archivo, " | ",
-                task.formato_origen, " -> ", task.formato_destino)
-
-            # ejecuta un subproceso que hace la conversión
-            subprocess.call(['ffmpeg', '-i', task.ruta_archivo_origen,
-                task.ruta_archivo_destino])
-
-            task.estado = "processed"
-            db.session.commit()
-
-            # envia el mensaje al usuario
-            mensaje = f"La tarea {task.id} fue procesada correctamente."
-            SendSlack(mensaje)
-
-    print(">>> Fecha de fin: ", datetime.now())
+    asunto = "Notificacion de Cloud Conversion Tool"
 
     return "Done"
+

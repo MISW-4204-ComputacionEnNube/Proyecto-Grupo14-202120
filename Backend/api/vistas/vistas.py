@@ -8,6 +8,7 @@
 # ----------------------------------------------------------------------------
 
 from flask import request
+from Backend.api.tareas.tareas import SendEmail
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token, \
     get_jwt_identity
@@ -21,12 +22,10 @@ from operator import contains
 from werkzeug.utils import secure_filename
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy
-import subprocess
-import multiprocessing as mp
 import os
 
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
-from ..tareas import Convert, SendSlack
+from ..tareas import SendSlack, SendEmail
 
 # ----------------------------------------------------------------------------
 
@@ -39,7 +38,7 @@ __license__ = "GPLv3"
 __version__ = "1.0.0"
 __email__ = "s.salinas@uniandes.edu.co"
 __status__ = "Dev"
-__date__ = "2021-10-19 15:46"
+__date__ = "2021-10-29 05:29"
 
 # ----------------------------------------------------------------------------
 
@@ -516,7 +515,6 @@ class VistaTarea(Resource):
 
             # elimina el archivo previamente convertido
             if tarea.estado == "processed":
-                # subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
                 os.remove(tarea.ruta_archivo_destino)
 
             # actualiza la tarea
@@ -528,6 +526,7 @@ class VistaTarea(Resource):
             # envia el mensaje al usuario informando de la actualizacion
             mensaje = f"Se actualizo exitosamente la tarea {id_task}."
             SendSlack(mensaje)
+            SendEmail(mensaje, user.id)
 
             return "La tarea fue actualizada", 200
 
@@ -559,12 +558,10 @@ class VistaTarea(Resource):
             tarea = Tarea.query.get(id_task)
 
             # elimina el archivo original
-            # subprocess.call(['rm', '-f', tarea.ruta_archivo_origen])
             os.remove(tarea.ruta_archivo_origen)
 
             # elimina el archivo convertido
             if tarea.estado == "processed":
-                # subprocess.call(['rm', '-f', tarea.ruta_archivo_destino])
                 os.remove(tarea.ruta_archivo_destino)
 
             # elimina el registro en la base de datos
@@ -629,69 +626,4 @@ class VistaUsuariosTarea(Resource):
         else:
 
             return f"El archivo {filename} no existe para el usuario {user_id}."
-
-
-# ----------------------------------------------------------------------------
-
-
-# end point: /api/run_tasks
-class VistaEjecutarTareas(Resource):
-    """Clase relacionada con el procesamiento de las tareas"""
-
-    def get(self):
-        """Se dispara la tarea de conversion.
-
-        Esta funcion se llama usando CURL desde la linea de comandos asi:
-        Esta funcion se llama usando CURL desde la linea de comandos asi:
-        curl -X POST -H "Content-Type: multipart/form-data" 
-             -H "Authorization: Bearer ..token.." 
-             http://localhost:5000/api/run_tasks
-        """
-
-        # obtiene los datos como parametros de la solicitud
-        numProc = request.args.get('numProc', default = mp.cpu_count(), type = int)
-
-        if numProc < 1:
-            numProc = 1
-
-        # obtiene la lista de identificadores de las tareas por procesar
-        lista = []
-        for task in Tarea.query.filter(Tarea.estado=='uploaded'):
-            lista.append(task.id)
-
-        if len(lista) == 0:
-            return "No hay tareas por procesar.", 200
-
-        # calcula el numero de identificadores por grupo
-        nreg = round(len(lista)/numProc, 0) 
-
-        # divide la lista en grupos
-        listgroup = [[] for i in range(numProc)]
-        group = 0
-        for item in lista:
-            listgroup[group].append(item)
-            group += 1
-            if group >= numProc:
-                group = 0
-
-        # Init multiprocessing.Pool()
-        pool = mp.Pool(numProc)
-
-        print(">>> Fecha de inicio principal: ", datetime.now())
-
-        # inicia el multiprocesamiento
-        result_objects = [pool.apply_async(Convert, args=([group])) for group in listgroup]
-
-        print(">>> Fecha de final principal: ", datetime.now())
-
-        # result_objects is a list of pool.ApplyResult objects
-        results = [r.get()[1] for r in result_objects]
-
-        # cierra el pool
-        pool.close()
-
-        pool.join()
-        print(results[:10])
-
-        return results
 

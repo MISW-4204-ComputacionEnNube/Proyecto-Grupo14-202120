@@ -21,7 +21,7 @@ __license__ = "GPLv3"
 __version__ = "1.0.0"
 __email__ = "s.salinas@uniandes.edu.co"
 __status__ = "Dev"
-__date__ = "2021-10-19 15:24"
+__date__ = "2021-10-29 05:23"
 
 # ----------------------------------------------------------------------------
 
@@ -43,6 +43,6 @@ def create_app():
     app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b23a5d1616bf319bc298105da20fa'
     app.config['JWT_SECRET_KEY']='Maestría-en-Ingeniería-de-Software-Miso2021'
     app.config['PROPAGATE_EXCEPTIONS'] = True
-    app.config['UPLOAD_FOLDER'] = "/home/estudiante/Proyecto-Grupo14-202120/Backend/files"
+    app.config['UPLOAD_FOLDER'] = "/home/ubuntu/Proyecto-Grupo14-202120/Backend/files"
 
     return app
