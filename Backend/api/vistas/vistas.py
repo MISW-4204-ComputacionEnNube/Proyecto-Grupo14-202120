@@ -289,8 +289,8 @@ class VistaTareas(Resource):
                 # ordena las tareas de forma ascendente
                 tareas = tareas.order_by(Tarea.id)
 
-
-            count = 0
+            # se inicia en 1 el conteno de tareas a retornar
+            count = 1
             lista = []
             for ta in tareas:
                 lista.append({'id': ta.id, 'nombre': ta.archivo, 
