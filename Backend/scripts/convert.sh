@@ -76,8 +76,9 @@ do
             PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"
 
             # envia un mensaje al usuario
-            subject="Notificacion de conversion tarea $id"
-            body="La tarea $id, que consista en convertir el archivo $archivo del formato $formato_origen al formato $formato_destino y fue activada la fecha $fecha, fue ejecutada correctamente y la conversion del archivo curso exitosamente"
+            subject="Notificacion de Cloud Conversion Tool"
+            body="La tarea, que consistia en convertir el archivo $archivo del formato $formato_origen al formato $formato_destino y que fue activada la fecha $fecha, fue ejecutada correctamente y la conversion del archivo curso exitosamente."
+            body=$body"<br><br>Cordialmente,<br><br>Cloud Conversion Tool"
             # encripta el nombre de usuario
             esmtp_username=`echo -n $smtp_username | openssl enc -base64`
             esmtp_password=`echo -n $smtp_password | openssl enc -base64`
