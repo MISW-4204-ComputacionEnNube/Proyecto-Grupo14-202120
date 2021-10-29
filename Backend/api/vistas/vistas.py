@@ -8,7 +8,6 @@
 # ----------------------------------------------------------------------------
 
 from flask import request
-from Backend.api.tareas.tareas import SendEmail
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token, \
     get_jwt_identity
