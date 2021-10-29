@@ -53,10 +53,10 @@ do
     ruta_archivo_origen=`echo $item | cut -d '|' -f 2`
     ruta_archivo_destino=`echo $item | cut -d '|' -f 3`
     email=`echo $item | cut -d '|' -f 4`
-    archivo=`echo $item | cut -d '|' -f 4`
-    formato_origen=`echo $item | cut -d '|' -f 4`
-    formato_destino=`echo $item | cut -d '|' -f 4`
-    fecha=`echo $item | cut -d '|' -f 4`
+    archivo=`echo $item | cut -d '|' -f 5`
+    formato_origen=`echo $item | cut -d '|' -f 6`
+    formato_destino=`echo $item | cut -d '|' -f 7`
+    fecha=`echo $item | cut -d '|' -f 8`
 
 
     # convierte el archivo
@@ -77,7 +77,7 @@ do
 
             # envia un mensaje al usuario
             subject="Notificacion de conversion tarea $id"
-            body="La tarea $id, que consista en convertir el archivo $archivo del formato $formato_origen al formato $formato_destino y fue activada la fecha $fecha, fue ejecutada correctaamente y la conversion del archivo curso exitosamente"
+            body="La tarea $id, que consista en convertir el archivo $archivo del formato $formato_origen al formato $formato_destino y fue activada la fecha $fecha, fue ejecutada correctamente y la conversion del archivo curso exitosamente"
             # encripta el nombre de usuario
             esmtp_username=`echo -n $smtp_username | openssl enc -base64`
             esmtp_password=`echo -n $smtp_password | openssl enc -base64`
