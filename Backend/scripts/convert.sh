@@ -40,7 +40,7 @@ port=`grep '"port"' $credenciales | cut -d ':' -f 2`
 conversor="/usr/bin/ffmpeg -i "
 
 # hace ciclo por las tareas que estan pendientes por convertir
-consulta="select tarea.id, tarea.ruta_archivo_origen, tarea.ruta_archivo_destino, usuario.email, tarea.archivo, tarea.formato_origen, tarea.formato_destino, tarea.fecha from tarea, usuario where tarea.usuario_id=usuario.id and tarea.estado='uploaded';"
+consulta="select tarea.id, tarea.ruta_archivo_origen, tarea.ruta_archivo_destino, usuario.email, tarea.archivo, tarea.formato_origen, tarea.formato_destino, tarea.fecha, usuario.usuario from tarea, usuario where tarea.usuario_id=usuario.id and tarea.estado='uploaded';"
 
 for item in `PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"`
 do
@@ -57,6 +57,7 @@ do
     formato_origen=`echo $item | cut -d '|' -f 6`
     formato_destino=`echo $item | cut -d '|' -f 7`
     fecha=`echo $item | cut -d '|' -f 8`
+    usuario=`echo $item | cut -d '|' -f 9`
 
 
     # convierte el archivo
@@ -78,7 +79,7 @@ do
             # envia un mensaje al usuario
             subject="Notificacion de Cloud Conversion Tool"
             body="La tarea, que consistia en convertir el archivo $archivo del formato $formato_origen al formato $formato_destino y que fue activada la fecha $fecha, fue ejecutada correctamente y la conversion del archivo curso exitosamente."
-            body=$body"<br><br>Cordialmente,<br><br>Cloud Conversion Tool"
+            body=`echo -e "Hola $usuario,\n\n"$body"\n\nCordialmente,\n\n\nCloud Conversion Tool"`
             # encripta el nombre de usuario
             esmtp_username=`echo -n $smtp_username | openssl enc -base64`
             esmtp_password=`echo -n $smtp_password | openssl enc -base64`
