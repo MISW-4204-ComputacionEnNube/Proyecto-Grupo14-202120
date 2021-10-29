@@ -20,6 +20,16 @@
 
 # ----------------------------------------------------------------------------
 
+# credenciales para el envio del email
+from="s.salinasv@uniandes.edu.co"
+from_name="Santiago Alejandro Salinas Vargas"
+smtp_username="AKIA2VWXL5JUYXVHHU65"
+smtp_password="BGK3EwVotaGornWSAYLBtr23lbOzKRo+r+fYaO944RcI"
+
+subject="Notificacion de conversion"
+body="Tarea de conversion ejecutada exitosamente"
+
+
 # Obtiene las credenciales de conexion a la base de datos
 credenciales="/home/ubuntu/Proyecto-Grupo14-202120/Backend/api/credenciales.json"
 host=`grep '"host"' $credenciales | cut -d '"' -f 4`
@@ -32,7 +42,7 @@ port=`grep '"port"' $credenciales | cut -d ':' -f 2`
 conversor="/usr/bin/ffmpeg -i "
 
 # hace ciclo por las tareas que estan pendientes por convertir
-consulta="select id, ruta_archivo_origen, ruta_archivo_destino, usuario_id from tarea where estado='uploaded';"
+consulta="select tarea.id, tarea.ruta_archivo_origen, tarea.ruta_archivo_destino, usuario.email from tarea, usuario where tarea.usuario_id=usuario.id and tarea.estado='uploaded';"
 
 for item in `PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"`
 do
@@ -44,7 +54,7 @@ do
     id=`echo $item | cut -d '|' -f 1`
     ruta_archivo_origen=`echo $item | cut -d '|' -f 2`
     ruta_archivo_destino=`echo $item | cut -d '|' -f 3`
-    usuario_id=`echo $item | cut -d '|' -f 4`
+    email=`echo $item | cut -d '|' -f 4`
 
     # convierte el archivo
     $conversor $ruta_archivo_origen $ruta_archivo_destino
@@ -64,6 +74,30 @@ do
 
             # envia un mensaje al usuario
             # TODO
+            # user smtp: ses-smtp-user.20211029-071610
+            # Nombre de usuario de SMTP: AKIA2VWXL5JUYXVHHU65
+            # Contraseña de SMTP: BGK3EwVotaGornWSAYLBtr23lbOzKRo+r+fYaO944RcI
+
+            # encripta el nombre de usuario
+            esmtp_username=`echo -n $smtp_username | openssl enc -base64`
+            esmtp_password=`echo -n $smtp_password | openssl enc -base64`
+            # crea el archivo con el mensaje
+            tmp=`mktemp`
+            echo "EHLO example.com" > $tmp
+            echo "AUTH LOGIN" > $tmp
+            echo "$esmtp_username" > $tmp
+            echo "$esmtp_password" > $tmp
+            echo "MAIL FROM: $from" > $tmp
+            echo "RCPT TO: $email" > $tmp
+            echo "DATA" > $tmp
+            #echo "X-SES-CONFIGURATION-SET: ConfigSet" > $tmp
+            echo "From: $from_name <$from>" > $tmp
+            echo "To: $email" > $tmp
+            echo "Subject: $subject" > $tmp
+            echo "" > $tmp
+            echo "$body." > $tmp
+            echo "." > $tmp
+            echo "QUIT" > $tmp
             
         fi
     fi
