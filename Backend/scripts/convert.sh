@@ -22,11 +22,11 @@
 
 # Obtiene las credenciales de conexion a la base de datos
 credenciales="/home/ubuntu/Proyecto-Grupo14-202120/Backend/api/credenciales.json"
-host=`grep host $credenciales | cut -d '"' -f 4`
-database=`grep database $credenciales | cut -d '"' -f 4`
-user=`grep user $credenciales | cut -d '"' -f 4`
-password=`grep password $credenciales | cut -d '"' -f 4`
-port=`grep port $credenciales | cut -d '"' -f 4`
+host=`grep '"host"' $credenciales | cut -d '"' -f 4`
+database=`grep '"database"' $credenciales | cut -d '"' -f 4`
+user=`grep '"user"' $credenciales | cut -d '"' -f 4`
+password=`grep '"password"' $credenciales | cut -d '"' -f 4`
+port=`grep '"port"' $credenciales | cut -d ':' -f 2`
 
 # obtiene la ruta del software conversor
 conversor="/usr/bin/ffmpeg -i "
