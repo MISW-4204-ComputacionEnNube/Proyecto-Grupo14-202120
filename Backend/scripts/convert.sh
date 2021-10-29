@@ -25,6 +25,8 @@ from="s.salinasv@uniandes.edu.co"
 from_name="Santiago Alejandro Salinas Vargas"
 smtp_username="AKIA2VWXL5JUYXVHHU65"
 smtp_password="BGK3EwVotaGornWSAYLBtr23lbOzKRo+r+fYaO944RcI"
+smtp_endpoint="email-smtp.us-east-1.amazonaws.com"
+smtp_port=587
 
 subject="Notificacion de conversion"
 body="Tarea de conversion ejecutada exitosamente"
@@ -84,21 +86,24 @@ do
             # crea el archivo con el mensaje
             tmp=`mktemp`
             echo "EHLO example.com" > $tmp
-            echo "AUTH LOGIN" > $tmp
-            echo "$esmtp_username" > $tmp
-            echo "$esmtp_password" > $tmp
-            echo "MAIL FROM: $from" > $tmp
-            echo "RCPT TO: $email" > $tmp
-            echo "DATA" > $tmp
-            #echo "X-SES-CONFIGURATION-SET: ConfigSet" > $tmp
-            echo "From: $from_name <$from>" > $tmp
-            echo "To: $email" > $tmp
-            echo "Subject: $subject" > $tmp
-            echo "" > $tmp
-            echo "$body." > $tmp
-            echo "." > $tmp
-            echo "QUIT" > $tmp
+            echo "AUTH LOGIN" >> $tmp
+            echo "$esmtp_username" >> $tmp
+            echo "$esmtp_password" >> $tmp
+            echo "MAIL FROM: $from" >> $tmp
+            echo "RCPT TO: $email" >> $tmp
+            echo "DATA" >> $tmp
+            #echo "X-SES-CONFIGURATION-SET: ConfigSet" >> $tmp
+            echo "From: $from_name <$from>" >> $tmp
+            echo "To: $email" >> $tmp
+            echo "Subject: $subject" >> $tmp
+            echo "" >> $tmp
+            echo "$body." >> $tmp
+            echo "." >> $tmp
+            echo "QUIT" >> $tmp
             
+            # envia el correo
+            openssl s_client -crlf -quiet -starttls smtp -connect $smtp_endpoint:$smtp_port < $tmp
+
         fi
     fi
 done
