@@ -24,7 +24,6 @@ from password_strength import PasswordPolicy
 import os
 
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
-from ..tareas import SendSlack, SendEmail
 
 # ----------------------------------------------------------------------------
 
@@ -521,11 +520,6 @@ class VistaTarea(Resource):
             tarea.ruta_archivo_destino = ruta_archivo_destino
             tarea.estado = 'uploaded'
             db.session.commit()
-
-            # envia el mensaje al usuario informando de la actualizacion
-            mensaje = f"Se actualizo exitosamente la tarea {id_task}."
-            SendSlack(mensaje)
-            SendEmail(mensaje, user.id)
 
             return "La tarea fue actualizada", 200
 
