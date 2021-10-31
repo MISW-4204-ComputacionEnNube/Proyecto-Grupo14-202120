@@ -20,6 +20,9 @@
 
 # ----------------------------------------------------------------------------
 
+# imprime la fecha actual, para calcular el tiempo de ejcución del script
+echo "FECHA INICIO : "`date '+%Y%m%d%H%M%S'`
+
 # credenciales para el envio del email
 from="s.salinasv@uniandes.edu.co"
 from_name="Santiago Alejandro Salinas Vargas"
@@ -114,4 +117,4 @@ do
     fi
 done
 
-echo "Done"
+echo "FECHA FIN : "`date '+%Y%m%d%H%M%S'`
