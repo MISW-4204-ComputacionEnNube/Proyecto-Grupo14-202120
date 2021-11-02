@@ -3,7 +3,7 @@
 
 # ----------------------------------------------------------------------------
 
-# Definición del script que dispara de manera remota la conversion de archivos.
+# Definición del script quep rueba la conversion de archivos.
 
 # ----------------------------------------------------------------------------
 
@@ -16,12 +16,33 @@
 # __version__ = "1.0.0"
 # __email__ = "s.salinas@uniandes.edu.co"
 # __status__ = "Dev"
-# __date__ = "2021-10-29 05:33"
+# __date__ = "2021-10-31 10:10"
+
+# ----------------------------------------------------------------------------
+
+# Obtiene las credenciales de conexion a la base de datos
+credenciales="/home/ubuntu/Proyecto-Grupo14-202120/Backend/api/credenciales.json"
+host=`grep '"host"' $credenciales | cut -d '"' -f 4`
+database=`grep '"database"' $credenciales | cut -d '"' -f 4`
+user=`grep '"user"' $credenciales | cut -d '"' -f 4`
+password=`grep '"password"' $credenciales | cut -d '"' -f 4`
+port=`grep '"port"' $credenciales | cut -d ':' -f 2`
+
+# elimina las tareas en la base de datos
+consulta="delete from tarea;"
+PGPASSWORD=$password psql -A -t -U $user -h $host -p $port -d $database -c "$consulta"
+# elimina los archivos procesados
+rm /home/ubuntu/Proyecto-Grupo14-202120/Backend/files/*.wma
+# recrea la base de datos
+PGPASSWORD=$password psql -A -t -U $user -h $host -p $port $database < /home/ubuntu/test_log/tarea.sql
+
+# crea el contador de tareas
+counter=0
 
 # ----------------------------------------------------------------------------
 
 # imprime la fecha actual, para calcular el tiempo de ejcución del script
-echo "FECHA INICIO : "`date '+%Y%m%d%H%M%S'`
+echo "FECHA INICIO : "`date '+%Y%m%d%H%M%S'` > /home/ubuntu/test_log/log_execution.log
 
 # credenciales para el envio del email
 from="s.salinasv@uniandes.edu.co"
@@ -50,6 +71,8 @@ do
     echo -e "\n==============================\n"
     echo -e "Procesando la tarea:\n"
     echo -e "$item\n"
+
+    inicio=`date '+%s'`
 
     # divide la informacion del item
     id=`echo $item | cut -d '|' -f 1`
@@ -109,12 +132,20 @@ do
             echo "" >> $tmp
             echo "." >> $tmp
             echo "QUIT" >> $tmp
-            
-            # envia el correo
-            openssl s_client -crlf -quiet -starttls smtp -connect $smtp_endpoint:$smtp_port < $tmp &
 
+            # envia el correo
+            # openssl s_client -crlf -quiet -starttls smtp -connect $smtp_endpoint:$smtp_port < $tmp &
+
+            fin=`date '+%s'`
+            counter=$((counter+1))
+	    dif=$((fin-inicio))
+
+            echo $counter $inicio $fin $dif >> /home/ubuntu/test_log/log_execution.log
         fi
     fi
 done
 
-echo "FECHA FIN : "`date '+%Y%m%d%H%M%S'`
+# elimina el archivo temporal
+rm $tmp
+
+echo "Done"
