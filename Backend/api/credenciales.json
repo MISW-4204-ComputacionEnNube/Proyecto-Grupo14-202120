@@ -1,5 +1,5 @@
 {
-  "host":"localhost",
+  "host":"database-grupo14.c2cqzppar1if.us-east-1.rds.amazonaws.com",
   "database":"vynils",
   "user":"nube",
   "password":"Grupo14",
