@@ -14,4 +14,4 @@
 
 * Además se desplegaron instancias EC2 para el Worker y NFS y se configuraron los servicios de "RDS" con la base de datos PostgreSQL y Simple Email Service "SES". <br>
 
-* El detalle de la configuración, instalación y despliegue se puede consultar en la [Wiki](https://github.com/MISW-4204-ComputacionEnNube/Proyecto-Grupo14-202120/wiki) del proyecto, sección "Sistema conversión Cloud - AWS".
+* El detalle de la configuración, instalación y despliegue se puede consultar en la [Wiki](https://github.com/MISW-4204-ComputacionEnNube/Proyecto-Grupo14-202120/wiki) del proyecto, sección "Sistema conversión Cloud - AWS", desde donde puede descargar el respectivo release.
