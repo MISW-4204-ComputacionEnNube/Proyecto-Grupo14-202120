@@ -16,91 +16,108 @@
 # __version__ = "1.0.0"
 # __email__ = "jl.lopez77.edu.co"
 # __status__ = "Dev"
-# __date__ = "2021-11-10 18:00"
+# __date__ = "2021-11-13 05:56"
 ​
 # ----------------------------------------------------------------------------
-​
+
+# define las constantes usadas en el script
+user="ubuntu"
+group="www-data"
+pro_name="Proyecto-Grupo14-202120"
+proyecto="/home/$user/$pro_name"
+api="/home/$user/$pro_name/Backend"
+url="https://github.com/MISW-4204-ComputacionEnNube/$pro_name.git"
+api_service="apig14"
+port="8080"
+ip=`ip addr | grep "inet " | grep "eth0" | cut -d ' ' -f 6 | cut -d '/' -f 1`
+
+# ----------------------------------------------------------------------------
+
+echo "Inicia la configuración instancia web "`date '+%Y%m%d%H%M%S'`
+
+# +++++++++++++++++++++++++++++++++++​
+
 # Preparar el sistema para la instalación de los servicios.
-​
-sudo apt update
-sudo apt upgrade
-sudo apt install git
-git config --global user.name "J3LopezL"
-git config --global user.email jl.lopez77@uniandes.edu.co
-sudo apt install python3.8-venv
-sudo apt install python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools
-sudo apt install nginx
-sudo usermod "$(whoami)" -a -G www-data
-​
-function servicioApi(){
-  echo "[Unit]" | sudo tee -a /etc/systemd/system/apig14.service
-  echo "Description=Gunicorn instance to serve Gunicorn apig14" | sudo tee -a /etc/systemd/system/apig14.service
-  echo "After=network.target" | sudo tee -a /etc/systemd/system/apig14.service
-  echo -e | sudo tee -a /etc/systemd/system/apig14.service
-  echo "[Service]" | sudo tee -a /etc/systemd/system/apig14.service
-  echo "User=$(whoami)" | sudo tee -a /etc/systemd/system/apig14.service
-  echo "Group=www-data" | sudo tee -a /etc/systemd/system/apig14.service
-  echo "WorkingDirectory=/home/"$(whoami)"/Proyecto-Grupo14-202120/Backend" | sudo tee -a /etc/systemd/system/apig14.service
-  echo "Environment="PATH=/home/"$(whoami)"/Proyecto-Grupo14-202120/Backend/venv/bin"" | sudo tee -a /etc/systemd/system/apig14.service
-  echo "ExecStart=/home/"$(whoami)"/Proyecto-Grupo14-202120/Backend/venv/bin/gunicorn --workers 4 --bind unix:apig14.sock -m 007 wsgi:app" | sudo tee -a /etc/systemd/system/apig14.service
-  echo -e | sudo tee -a /etc/systemd/system/apig14.service
-  echo "[Install]" | sudo tee -a /etc/systemd/system/apig14.service
-  echo "WantedBy=multi-user.target" | sudo tee -a /etc/systemd/system/apig14.service
-}
-​
-function servicioNginx(){
-  echo "server {" | sudo tee -a /etc/nginx/sites-available/apig14
-  echo "    listen 8080;" | sudo tee -a /etc/nginx/sites-available/apig14
-  echo "    server_name 172.16.1.251;" | sudo tee -a /etc/nginx/sites-available/apig14
-  echo "    client_max_body_size 100M;" | sudo tee -a /etc/nginx/sites-available/apig14
-  echo -e | sudo tee -a /etc/nginx/sites-available/apig14
-  echo "    location / {" | sudo tee -a /etc/nginx/sites-available/apig14
-  echo "        include proxy_params;" | sudo tee -a /etc/nginx/sites-available/apig14
-  echo "        proxy_pass http://unix:/home/"$(whoami)"/Proyecto-Grupo14-202120/Backend/apig14.sock;" | sudo tee -a /etc/nginx/sites-available/apig14
-  echo "    }" | sudo tee -a /etc/nginx/sites-available/apig14
-  echo "}" | sudo tee -a /etc/nginx/sites-available/apig14
-}
-​
-echo "Inicia configuración instancia web "`date '+%Y%m%d%H%M%S'`
-Proyecto="/home/"$(whoami)"/Proyecto-Grupo14-202120"
-​
+# actualiza la lista de paquetes en el manejador de paquetes del 
+# sistema operativo​
+apt update -y
+# instala los paquetes básicos
+apt install git python3-pip python3-dev python3-setuptools build-essential -y 
+apt install libssl-dev libffi-dev nginx -y
+
+# +++++++++++++++++++++++++++++++++++​
+
+# Descarga del repositorio los archivos requeridos
+cd /home/$user
+git clone $url
+
 # Verificar la existencia de la carpeta del proyecto.
-if [ ! -d $Proyecto ]; then
-  cd /home/"$(whoami)"/
-  # Descarga del repositorio los archivos requeridos
-  git clone -b releasev2 git@github.com:MISW-4204-ComputacionEnNube/Proyecto-Grupo14-202120.git
-  Api="/home/"$(whoami)"/Proyecto-Grupo14-202120/Backend"
-  # Verifica que se haya descargado la carpeta principal del proyecto
-  if [ -d $Api ]; then
-    cd $Proyecto
-    # Borra directorios no requeridos
-    rm -rf Docs_Postman
-    rm -rf images
-    cd $Api
-    # rm -rf files
-    rm -rf scripts
-    # Instalación del ambiente virtual
-    python3 -m venv venv
-    # Activa el ambiente virtual
-    source venv/bin/activate
-    # Instala los paquetes requeridos para el proyecto 
-    pip install -r requirements.txt
-    # Desactiva el ambiente virtual
-    deactivate
-    # Crear el servicio de Gunicorn con el nombre apig14 en el sistema.
-    servicioApi
-    # Habilitar el servicio de Nginx por el puerto 8080 sock apig14.
-    sudo rm -rf /etc/nginx/sites-available/*
-    sudo rm -rf /etc/nginx/sites-enabled/*
-    servicioNginx
-    # Iniciar los servicios instalados.
-    sudo systemctl start apig14
-    sudo systemctl enable apig14
-    sudo ln -s /etc/nginx/sites-available/apig14 /etc/nginx/sites-enabled
-    sudo systemctl restart nginx
-    sudo ufw allow 'Nginx Full'
-  else
-    echo "Se presento un error en la descarga del repositorio"
-  fi
-echo "Instalación terminada "`date '+%Y%m%d%H%M%S'`
+if [ ! -d $proyecto ]; 
+then
+  # no existe el directorio del repositorio
+  echo "Se presento un error en la descarga del repositorio"
+  exit 1
 fi
+# Verifica que se haya descargado la carpeta principal del proyecto
+if [ ! -d $Api ];
+then
+  echo "Se presento un error en la descarga del repositorio"
+  exit 2
+fi
+
+# Ingresa al directorio donde estan el código de la aplicación
+cd $api
+# Instala los paquetes requeridos para el proyecto 
+pip install -r requirements.txt
+
+# +++++++++++++++++++++++++++++++++++​
+
+# Crear el servicio de Gunicorn
+echo -e "
+[Unit]
+Description=Gunicorn instance to serve Gunicorn $api_service
+After=network.target
+
+[Service]
+User=$user
+Group=$group
+WorkingDirectory=$api
+Environment='PATH=$api/venv/bin'
+ExecStart=$api/venv/bin/gunicorn --workers 4 --bind unix:$api_service.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
+" > /etc/systemd/system/$api_service.service
+
+# +++++++++++++++++++++++++++++++++++​
+
+# elimina el sitios por default habilitado en Nginx
+rm -f /etc/nginx/sites-enabled/default
+# crea el servicio de Nginx
+echo -e "
+server {
+    listen $port;
+    server_name $ip;
+    client_max_body_size 100M;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:$api/$api_service.sock;
+    }
+}" > /etc/nginx/sites-enabled/$api_service
+
+# habilita en el firewall el trafico hacia Nginx
+ufw allow 'Nginx Full'
+
+# +++++++++++++++++++++++++++++++++++​
+
+# Iniciar los servicios instalados.
+systemctl enable apig14
+systemctl start apig14
+systemctl stop apig14
+systemctl start apig14
+
+systemctl stop nginx
+systemctl start nginx
+
+echo "Instalación terminada "`date '+%Y%m%d%H%M%S'`
