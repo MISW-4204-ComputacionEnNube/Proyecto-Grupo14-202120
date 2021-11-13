@@ -21,7 +21,7 @@
 # ----------------------------------------------------------------------------
 
 # hace ciclo por los grupos de conversiones paralelos que se desean ejecutar
-for item in 7 #$(seq 7 20)
+for item in $(seq 1 20)
 do
     echo -e "\n==============================\n"
     echo -e "Grupos paralelos:\n"
