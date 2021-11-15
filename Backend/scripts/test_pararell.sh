@@ -23,6 +23,9 @@
 # crea el contador de tareas
 counter=$1
 
+# bandera que define se se procesarán los archivos desde unaorigen AWS S3
+s3=$2
+
 # Obtiene las credenciales de conexion a la base de datos
 credenciales="/home/ubuntu/Proyecto-Grupo14-202120/Backend/api/credenciales.json"
 host=`grep '"host"' $credenciales | cut -d '"' -f 4`
@@ -72,7 +75,7 @@ do
     ruta_archivo_destino=`echo $item | cut -d '|' -f 3`
 
     # convierte el archivo
-    $conversor $id $counter $ruta_archivo_origen $ruta_archivo_destino &
+    $conversor $id $counter $ruta_archivo_origen $ruta_archivo_destino $s3 &
 
 done
 

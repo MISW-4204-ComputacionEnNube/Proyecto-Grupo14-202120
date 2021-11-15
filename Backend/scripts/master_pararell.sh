@@ -20,6 +20,9 @@
 
 # ----------------------------------------------------------------------------
 
+# bandera que define se se procesarán los archivos desde un origen AWS S3
+s3=1
+
 # hace ciclo por los grupos de conversiones paralelos que se desean ejecutar
 for item in $(seq 1 20)
 do
@@ -28,7 +31,7 @@ do
     echo -e "$item\n"
 
     # dispara el procesamiento paralelo
-    /bin/bash /home/ubuntu/Proyecto-Grupo14-202120/Backend/scripts/test_pararell.sh $((item*10))
+    /bin/bash /home/ubuntu/Proyecto-Grupo14-202120/Backend/scripts/test_pararell.sh $((item*10)) $s3
 
     # 4spera un tiempo dependiendo del numero de items paralelos
     sleep $((item*5*10+120))

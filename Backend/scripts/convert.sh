@@ -31,6 +31,9 @@ smtp_password="BGK3EwVotaGornWSAYLBtr23lbOzKRo+r+fYaO944RcI"
 smtp_endpoint="email-smtp.us-east-1.amazonaws.com"
 smtp_port=587
 
+# bandera que define se se procesarán los archivos desde unaorigen AWS S3
+s3=1
+
 # Obtiene las credenciales de conexion a la base de datos
 credenciales="/home/ubuntu/Proyecto-Grupo14-202120/Backend/api/credenciales.json"
 host=`grep '"host"' $credenciales | cut -d '"' -f 4`
@@ -62,6 +65,11 @@ do
     fecha=`echo $item | cut -d '|' -f 8`
     usuario=`echo $item | cut -d '|' -f 9`
 
+    # determina si se trata de una ejecución usando AWS S3
+    if test s3 -eq 1
+    then
+        aws s3 cp s3://bucket-grupo14/$ruta_archivo_origen $ruta_archivo_origen
+    fi
 
     # convierte el archivo
     $conversor $ruta_archivo_origen $ruta_archivo_destino
@@ -74,6 +82,12 @@ do
     then
         if test -s $ruta_archivo_destino
         then
+
+            # determina si se trata de una ejecución usando AWS S3
+            if test s3 -eq 1
+            then
+                aws s3 cp $ruta_archivo_destino s3://bucket-grupo14/$ruta_archivo_destino
+            fi
 
             # actualiza el estado de la tarea
             consulta="update tarea set estado='processed' where id=$id;"
@@ -116,5 +130,14 @@ do
         fi
     fi
 done
+
+# elimina el archivo temporal
+rm $tmp
+
+# determina si se trata de una ejecución usando AWS S3
+if test s3 -eq 1
+then
+    rm $ruta_archivo_origen $ruta_archivo_destino
+fi
 
 echo "FECHA FIN : "`date '+%Y%m%d%H%M%S'`

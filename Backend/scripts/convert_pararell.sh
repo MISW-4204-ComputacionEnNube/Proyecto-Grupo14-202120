@@ -24,6 +24,7 @@ id=$1
 counter=$2
 ruta_archivo_origen=$3
 ruta_archivo_destino=$4
+s3=$5
 
 # Obtiene las credenciales de conexion a la base de datos
 credenciales="/home/ubuntu/Proyecto-Grupo14-202120/Backend/api/credenciales.json"
@@ -38,6 +39,12 @@ conversor="/usr/bin/ffmpeg -i "
 
 inicio=`date '+%s'`
 
+# determina si se trata de una ejecución usando AWS S3
+if test s3 -eq 1
+then
+    aws s3 cp s3://bucket-grupo14/$ruta_archivo_origen $ruta_archivo_origen
+fi
+
 # convierte el archivo
 $conversor $ruta_archivo_origen $ruta_archivo_destino
 
@@ -49,6 +56,12 @@ if test $status -eq 0
 then
     if test -s $ruta_archivo_destino
     then
+
+        # determina si se trata de una ejecución usando AWS S3
+        if test s3 -eq 1
+        then
+            aws s3 cp $ruta_archivo_destino s3://bucket-grupo14/$ruta_archivo_destino
+        fi
 
         # actualiza el estado de la tarea
         consulta="update tarea set estado='processed' where id=$id;"
@@ -97,5 +110,11 @@ fi
 
 # elimina el archivo temporal
 rm $tmp
+
+# determina si se trata de una ejecución usando AWS S3
+if test s3 -eq 1
+then
+    rm $ruta_archivo_origen $ruta_archivo_destino
+fi
 
 echo "Done"

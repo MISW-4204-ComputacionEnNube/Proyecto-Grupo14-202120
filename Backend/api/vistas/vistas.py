@@ -36,7 +36,7 @@ __license__ = "GPLv3"
 __version__ = "1.0.0"
 __email__ = "s.salinas@uniandes.edu.co"
 __status__ = "Dev"
-__date__ = "2021-10-29 05:29"
+__date__ = "2021-11-15 11:25"
 
 # ----------------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ usuario_schema = UsuarioSchema()
 tarea_schema = TareaSchema()
 ruta = "/home/ubuntu/Proyecto-Grupo14-202120/Backend/files"
 formatos = ['aac', 'mp3', 'ogg', 'wav', 'wma']
-
+s3 = 1
 
 # ----------------------------------------------------------------------------
 
@@ -395,6 +395,11 @@ class VistaTareas(Resource):
             except:
                 return "Error al almacenar el archivo.", 400
 
+            # determina si el almacenamiento se debe hacer en s3
+            if s3 == 1:
+                os.system(f"aws s3 cp {ruta_archivo_origen} s3://bucket-grupo14{ruta_archivo_origen}")
+                os.system(f"rm {ruta_archivo_origen}")
+
             # crea el registro en la base de datos
             nueva_tarea = Tarea(
                 archivo = archivo,
@@ -513,7 +518,11 @@ class VistaTarea(Resource):
 
             # elimina el archivo previamente convertido
             if tarea.estado == "processed":
-                os.remove(tarea.ruta_archivo_destino)
+                # determina si el almacenamiento se debe hacer en s3
+                if s3 == 1:
+                    os.system(f"aws s3 rm s3://bucket-grupo14{tarea.ruta_archivo_destino}")
+                else:
+                    os.remove(tarea.ruta_archivo_destino)
 
             # actualiza la tarea
             tarea.formato_destino = extension_destino
@@ -550,12 +559,19 @@ class VistaTarea(Resource):
             # obtiene la tarea
             tarea = Tarea.query.get(id_task)
 
-            # elimina el archivo original
-            os.remove(tarea.ruta_archivo_origen)
+            # determina si el almacenamiento se debe hacer en s3
+            if s3 == 1:
+                os.system(f"aws s3 rm s3://bucket-grupo14{tarea.ruta_archivo_origen}")
+            else:
+                os.remove(tarea.ruta_archivo_origen)
 
-            # elimina el archivo convertido
+            # elimina el archivo previamente convertido
             if tarea.estado == "processed":
-                os.remove(tarea.ruta_archivo_destino)
+                # determina si el almacenamiento se debe hacer en s3
+                if s3 == 1:
+                    os.system(f"aws s3 rm s3://bucket-grupo14{tarea.ruta_archivo_destino}")
+                else:
+                    os.remove(tarea.ruta_archivo_destino)
 
             # elimina el registro en la base de datos
             db.session.delete(tarea)
@@ -601,6 +617,11 @@ class VistaUsuariosTarea(Resource):
 
             # si la tarea ya fue procesada retorna el archivo convertido
             if tarea.estado == "processed":
+
+                # procede a copiar si el archivo está en s3
+                if s3 == 1;
+                    os.system(f"aws s3 cp s3://bucket-grupo14{tarea.ruta_archivo_destino} {tarea.ruta_archivo_destino}")
+
                 try:
                     return send_file(tarea.ruta_archivo_destino, 
                         attachment_filename=str(tarea.ruta_archivo_destino).\
@@ -609,6 +630,11 @@ class VistaUsuariosTarea(Resource):
             	    return str(e)
 
             else:
+
+                # procede a copiar si el archivo está en s3
+                if s3 == 1;
+                    os.system(f"aws s3 cp s3://bucket-grupo14{tarea.ruta_archivo_origen} {tarea.ruta_archivo_origen}")
+
                 try:
                     return send_file(tarea.ruta_archivo_origen, 
                         attachment_filename=str(tarea.ruta_archivo_origen).\
@@ -619,4 +645,3 @@ class VistaUsuariosTarea(Resource):
         else:
 
             return f"El archivo {filename} no existe para el usuario {user_id}."
-

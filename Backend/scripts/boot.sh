@@ -42,8 +42,19 @@ echo "Inicia la configuración instancia web "`date '+%Y%m%d%H%M%S'`
 # sistema operativo​
 apt update -y
 # instala los paquetes básicos
-apt install git python3-pip python3-dev python3-setuptools build-essential -y 
-apt install libssl-dev libffi-dev nginx -y
+apt install git python3-venv python3-pip python3-dev build-essential -y 
+apt install libssl-dev libffi-dev python3-setuptools nginx awscli ffmpeg -y
+
+# +++++++++++++++++++++++++++++++++++​
+
+# establece las credenciales para S3
+mkdir /home/$user/.aws 
+echo -e "[default]
+aws_access_key_id = AKIA2VWXL5JUUTXUH57Q
+aws_secret_access_key = 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
+" > /home/$user/.aws/credentials
+
+# aws s3 ls s3://bucket-grupo14
 
 # +++++++++++++++++++++++++++++++++++​
 
@@ -65,8 +76,18 @@ then
   exit 2
 fi
 
+# actualiza el propietario del proyecto
+usermod $user -a -G $group
+chown -R $user:$group $proyecto
+
+# +++++++++++++++++++++++++++++++++++​
+
 # Ingresa al directorio donde estan el código de la aplicación
 cd $api
+# Instala el ambiente virtual
+python3 -m venv venv
+# Activa el ambiente virtual
+source venv/bin/activate
 # Instala los paquetes requeridos para el proyecto 
 pip install -r requirements.txt
 
@@ -106,14 +127,10 @@ server {
     }
 }" > /etc/nginx/sites-enabled/$api_service
 
-# habilita en el firewall el trafico hacia Nginx
-ufw allow 'Nginx Full'
-
 # +++++++++++++++++++++++++++++++++++​
 
 # Iniciar los servicios instalados.
 systemctl enable apig14
-systemctl start apig14
 systemctl stop apig14
 systemctl start apig14
 
