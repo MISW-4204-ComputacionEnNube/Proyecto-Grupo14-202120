@@ -619,7 +619,7 @@ class VistaUsuariosTarea(Resource):
             if tarea.estado == "processed":
 
                 # procede a copiar si el archivo está en s3
-                if s3 == 1;
+                if s3 == 1:
                     os.system(f"aws s3 cp s3://bucket-grupo14{tarea.ruta_archivo_destino} {tarea.ruta_archivo_destino}")
 
                 try:
