@@ -398,7 +398,7 @@ class VistaTareas(Resource):
             # determina si el almacenamiento se debe hacer en s3
             if s3 == 1:
                 os.system(f"aws s3 cp {ruta_archivo_origen} s3://bucket-grupo14{ruta_archivo_origen}")
-                os.system(f"rm {ruta_archivo_origen}")
+                os.remove(ruta_archivo_origen)
 
             # crea el registro en la base de datos
             nueva_tarea = Tarea(
