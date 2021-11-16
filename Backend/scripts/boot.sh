@@ -16,7 +16,7 @@
 # __version__ = "1.0.0"
 # __email__ = "jl.lopez77.edu.co"
 # __status__ = "Dev"
-# __date__ = "2021-11-13 05:56"
+# __date__ = "2021-11-15 19:34"
 ​
 # ----------------------------------------------------------------------------
 
@@ -48,11 +48,17 @@ apt install libssl-dev libffi-dev python3-setuptools nginx awscli ffmpeg -y
 # +++++++++++++++++++++++++++++++++++​
 
 # establece las credenciales para S3
-mkdir /home/$user/.aws 
+mkdir -p /home/$user/.aws 
 echo -e "[default]
 aws_access_key_id = AKIA2VWXL5JUUTXUH57Q
 aws_secret_access_key = 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
 " > /home/$user/.aws/credentials
+
+mkdir -p /root/.aws 
+echo -e "[default]
+aws_access_key_id = AKIA2VWXL5JUUTXUH57Q
+aws_secret_access_key = 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
+" > /root/.aws/credentials
 
 # aws s3 ls s3://bucket-grupo14
 
@@ -79,6 +85,7 @@ fi
 # actualiza el propietario del proyecto
 usermod $user -a -G $group
 chown -R $user:$group $proyecto
+chmod -R a+rw $proyecto
 
 # +++++++++++++++++++++++++++++++++++​
 
