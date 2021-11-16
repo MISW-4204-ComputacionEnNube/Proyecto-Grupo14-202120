@@ -40,7 +40,7 @@ conversor="/usr/bin/ffmpeg -i "
 inicio=`date '+%s'`
 
 # determina si se trata de una ejecución usando AWS S3
-if test s3 -eq 1
+if test $s3 -eq 1
 then
     aws s3 cp s3://bucket-grupo14/$ruta_archivo_origen $ruta_archivo_origen
 fi
@@ -58,7 +58,7 @@ then
     then
 
         # determina si se trata de una ejecución usando AWS S3
-        if test s3 -eq 1
+        if test $s3 -eq 1
         then
             aws s3 cp $ruta_archivo_destino s3://bucket-grupo14/$ruta_archivo_destino
         fi
@@ -112,7 +112,7 @@ fi
 rm $tmp
 
 # determina si se trata de una ejecución usando AWS S3
-if test s3 -eq 1
+if test $s3 -eq 1
 then
     rm $ruta_archivo_origen $ruta_archivo_destino
 fi
