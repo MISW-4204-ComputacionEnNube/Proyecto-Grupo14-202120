@@ -91,7 +91,7 @@ do
     # determina si se trata de una ejecución usando AWS S3
     if test $s3 -eq 1
     then
-        aws s3 cp s3://bucket-grupo14/$ruta_archivo_origen $ruta_archivo_origen
+        aws s3 cp s3://bucket-grupo14$ruta_archivo_origen $ruta_archivo_origen
     fi
 
     # convierte el archivo
@@ -109,7 +109,7 @@ do
             # determina si se trata de una ejecución usando AWS S3
             if test $s3 -eq 1
             then
-                aws s3 cp $ruta_archivo_destino s3://bucket-grupo14/$ruta_archivo_destino
+                aws s3 cp $ruta_archivo_destino s3://bucket-grupo14$ruta_archivo_destino
             fi
 
             # actualiza el estado de la tarea
