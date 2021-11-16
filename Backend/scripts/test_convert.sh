@@ -110,6 +110,7 @@ do
             if test $s3 -eq 1
             then
                 aws s3 cp $ruta_archivo_destino s3://bucket-grupo14$ruta_archivo_destino
+                rm $ruta_archivo_origen $ruta_archivo_destino
             fi
 
             # actualiza el estado de la tarea
@@ -161,11 +162,5 @@ done
 
 # elimina el archivo temporal
 rm $tmp
-
-# determina si se trata de una ejecución usando AWS S3
-if test $s3 -eq 1
-then
-    rm $ruta_archivo_origen $ruta_archivo_destino
-fi
 
 echo "Done"
