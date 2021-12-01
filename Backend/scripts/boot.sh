@@ -96,6 +96,7 @@ fi
 # actualiza el propietario del proyecto
 usermod $user -a -G $group
 chown -R $user:$group $proyecto
+chown -R $user:$group /home/$user/.aws
 chmod -R a+rw $proyecto
 
 # +++++++++++++++++++++++++++++++++++​
