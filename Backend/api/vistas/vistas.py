@@ -22,6 +22,7 @@ from werkzeug.utils import secure_filename
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy
 import os
+import boto3
 
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
 
@@ -46,6 +47,8 @@ tarea_schema = TareaSchema()
 ruta = "/home/ubuntu/Proyecto-Grupo14-202120/Backend/files"
 formatos = ['aac', 'mp3', 'ogg', 'wav', 'wma']
 s3 = 1
+# URL de la cola
+queue_url = 'https://sqs.us-east-1.amazonaws.com/733817334377/cola-grupo14.fifo'
 
 # ----------------------------------------------------------------------------
 
@@ -413,6 +416,62 @@ class VistaTareas(Resource):
 
             db.session.add(nueva_tarea)
             db.session.commit()
+
+            # crea el mensaje en la cola de aws
+            # Create SQS client
+            sqs = boto3.client('sqs')
+
+            # Send message to SQS queue
+            try:
+                response = sqs.send_message(
+                    QueueUrl=queue_url,
+                    MessageGroupId='1',
+                    MessageDeduplicationId='A',
+                    MessageAttributes={
+                        'Title': {
+                            'DataType': 'String',
+                            'StringValue': 'conversion'
+                        },
+                        'Date': {
+                            'DataType': 'String',
+                            'StringValue': str(tfecha)
+                        },
+                        'UserId': {
+                            'DataType': 'Number',
+                            'StringValue': str(user.id)
+                        },
+                        'TaskId': {
+                            'DataType': 'Number',
+                            'StringValue': str(nueva_tarea.id)
+                        },
+                        'Archivo': {
+                            'DataType': 'String',
+                            'StringValue': str(archivo)
+                        },
+                        'FormatoOrigen': {
+                            'DataType': 'String',
+                            'StringValue': str(extension_origen)
+                        },
+                        'RutaArchivoOrigen': {
+                            'DataType': 'String',
+                            'StringValue': str(ruta_archivo_origen)
+                        },
+                        'FormatoDestino': {
+                            'DataType': 'String',
+                            'StringValue': str(extension_destino)
+                        },
+                        'RutaArchivoDestino': {
+                            'DataType': 'String',
+                            'StringValue': str(ruta_archivo_destino)
+                        },
+                    },
+                    MessageBody=(
+                        'Carga de conversion de archivo.'
+                    )
+                )
+            except:
+                print("Error al general el mensaje en la cola")
+                pass
 
             return tarea_schema.dump(nueva_tarea)
 
