@@ -14,7 +14,7 @@ from flask_cors import CORS
 
 from api.modelos import db
 from api.vistas import VistaSignUp, VistaTarea, VistaTareas, \
-    VistaUsuariosTarea, VistaLogIn
+    VistaUsuariosTarea, VistaLogIn, VistaConvert
 
 # ----------------------------------------------------------------------------
 
@@ -47,6 +47,8 @@ api.add_resource(VistaLogIn, '/api/auth/login')
 api.add_resource(VistaTareas, '/api/tasks')
 api.add_resource(VistaTarea, '/api/tasks/<int:id_task>')
 api.add_resource(VistaUsuariosTarea, '/api/files/<string:filename>')
+api.add_resource(VistaConvert, '/api/convert')
+
 
 jwt = JWTManager(app)
 

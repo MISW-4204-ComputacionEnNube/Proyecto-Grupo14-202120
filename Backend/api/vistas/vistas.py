@@ -244,6 +244,26 @@ class VistaLogIn(Resource):
 # ----------------------------------------------------------------------------
 
 
+# end point: /api/convert
+class VistaConvert(Resource):
+    """Clase relacionada con las conversion de archivos."""
+
+    def get(self):
+        """Procesa las tareas.
+
+        Esta funcion se llama usando CURL desde la linea de comandos asi:
+        curl -X GET 
+             -H "Content-Type: multipart/form-data" 
+             -H "Authorization: Bearer ..token.."
+             "http://localhost:5000/api/convert"
+        """
+
+        return "solicitud procesada"
+
+
+# ----------------------------------------------------------------------------
+
+
 # end point: /api/tasks
 class VistaTareas(Resource):
     """Clase relacionada con las tareas en general."""
