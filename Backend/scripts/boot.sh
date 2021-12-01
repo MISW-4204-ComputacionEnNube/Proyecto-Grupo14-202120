@@ -54,11 +54,22 @@ aws_access_key_id = AKIA2VWXL5JUUTXUH57Q
 aws_secret_access_key = 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
 " > /home/$user/.aws/credentials
 
+echo -e "[default]
+output = json
+region = us-east-1
+" > /home/$user/.aws/config
+
 mkdir -p /root/.aws 
 echo -e "[default]
 aws_access_key_id = AKIA2VWXL5JUUTXUH57Q
 aws_secret_access_key = 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
 " > /root/.aws/credentials
+
+echo -e "[default]
+output = json
+region = us-east-1
+" > /root/.aws/config
+
 
 # aws s3 ls s3://bucket-grupo14
 
@@ -97,6 +108,7 @@ python3 -m venv venv
 source venv/bin/activate
 # Instala los paquetes requeridos para el proyecto 
 pip install -r requirements.txt
+pip install --upgrade awscli
 
 # +++++++++++++++++++++++++++++++++++​
 
