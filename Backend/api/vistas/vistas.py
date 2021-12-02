@@ -121,7 +121,7 @@ def ValidarPassword(password1: str, password2: str) -> tuple:
 class VistaMakeDataProof(Resource):
     """clase relacionada con la creacion de datos de prueba."""
 
-    def post(self):
+    def get(self):
         # obtiene los datos del usuario
         user_id = 1
         extension_destino = "wav"
