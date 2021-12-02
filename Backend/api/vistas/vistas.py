@@ -23,6 +23,7 @@ from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy
 import os
 import boto3
+import subprocess
 
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
 
@@ -44,11 +45,16 @@ __date__ = "2021-11-15 11:25"
 
 usuario_schema = UsuarioSchema()
 tarea_schema = TareaSchema()
-ruta = "/home/ubuntu/Proyecto-Grupo14-202120/Backend/files"
+ruta_base = "/home/ubuntu/Proyecto-Grupo14-202120/Backend"
+ruta = f"{ruta_base}/files"
+ruta_scripts = f"{ruta_base}/scripts"
+script_conversion = f"{ruta_scripts}/convert_pararell.sh"
 formatos = ['aac', 'mp3', 'ogg', 'wav', 'wma']
 s3 = 1
 # URL de la cola
 queue_url = 'https://sqs.us-east-1.amazonaws.com/733817334377/cola-grupo14.fifo'
+# maximas conversiones simultaneas
+max_num_proc = 50
 
 # ----------------------------------------------------------------------------
 
@@ -244,6 +250,34 @@ class VistaLogIn(Resource):
 # ----------------------------------------------------------------------------
 
 
+def get_num_proc():
+    """ Función que obtiene el valor de la variable del sistema.
+    """
+    # obtiene la variable del sistema del numero de procesos corriendo
+    num_proc = os.environ.get('num_proc')
+
+    if num_proc is not None:
+        if isinstance(num_proc, str):
+            try:
+                num_proc = int(num_proc)
+            except:
+                num_proc = 0
+                pass
+        elif isinstance(num_proc, int):
+            num_proc = num_proc
+        else:
+            num_proc = 0
+    else:
+        num_proc = 0
+
+    if num_proc<0:
+        num_proc = 0
+
+    return num_proc
+
+# ----------------------------------------------------------------------------
+
+
 # end point: /api/convert
 class VistaConvert(Resource):
     """Clase relacionada con las conversion de archivos."""
@@ -258,7 +292,80 @@ class VistaConvert(Resource):
              "http://localhost:5000/api/convert"
         """
 
-        return "solicitud procesada"
+        # obtiene la variable del sistema del numero de procesos corriendo
+        num_proc = get_num_proc()
+        if num_proc>max_num_proc:
+            return "no se procesa por exceso de conversiones paralelas"
+            
+        # Create SQS client
+        sqs = boto3.client('sqs')
+
+        # Recupera un mensaje de la cola de mensajes
+        response = sqs.receive_message(
+            QueueUrl=queue_url,
+            AttributeNames=[
+                'SentTimestamp'
+            ],
+            MaxNumberOfMessages=1,
+            MessageAttributeNames=[
+                'All'
+            ],
+            VisibilityTimeout=60,
+            WaitTimeSeconds=0
+        )
+
+        # determina si existe un mensaje
+        if 'Messages' in response.keys():
+            message = response['Messages'][0]
+            receipt_handle = message['ReceiptHandle']
+
+            # Delete received message from queue
+            sqs.delete_message(
+                QueueUrl=queue_url,
+                ReceiptHandle=receipt_handle
+            )
+            print('Received and deleted message: %s' % message)
+
+            # extrae del mensaje la informacion a procesar
+            # ejemplo:
+            # {'Archivo': {'StringValue': 'archivo.mp3', 'DataType': 'String'}, 
+            # 'Date': {'StringValue': '202112010954', 'DataType': 'String'}, 
+            # 'FormatoDestino': {'StringValue': 'wav', 'DataType': 'String'}, 
+            # 'FormatoOrigen': {'StringValue': 'mp3', 'DataType': 'String'}, 
+            # 'RutaArchivoDestino': {'StringValue': '/home/ruta_archivo_destino/archivo.wav', 'DataType': 'String'}, 
+            # 'RutaArchivoOrigen': {'StringValue': '/home/ruta_archivo_origen/archivo.mp3', 'DataType': 'String'}, 
+            # 'TaskId': {'StringValue': '1', 'DataType': 'Number'}, 
+            # 'Title': {'StringValue': 'conversion', 'DataType': 'String'}, 
+            # 'UserId': {'StringValue': '1', 'DataType': 'Number'}}
+            if 'MessageAttributes' in message.keys():
+                if 'Title' in message['MessageAttributes'].keys():
+                    if message['MessageAttributes']['Title'] == 'conversion':
+                        if 'TaskId' in message['MessageAttributes'].keys() and \
+                            'RutaArchivoOrigen' in message['MessageAttributes'].keys() and \
+                            'RutaArchivoDestino' in message['MessageAttributes'].keys():
+
+                            task_id = message['MessageAttributes']['TaskId']
+                            ruta_archivo_origen = message['MessageAttributes']['RutaArchivoOrigen']
+                            ruta_archivo_destino = message['MessageAttributes']['RutaArchivoDestino']
+
+                            # aumenta la variable en el sistema
+                            num_proc = get_num_proc()
+                            os.environ['num_proc'] = str(num_proc+1)
+
+                            # ya con el archivo de manera local se dispara la conversion
+                            command = subprocess.Popen(["/bin/bash", script_conversion, task_id, 1, ruta_archivo_origen, ruta_archivo_destino, s3])
+                            command.communicate()
+
+                            # disminuye la variable en el sistema
+                            num_proc = get_num_proc()
+                            os.environ['num_proc'] = str(num_proc-1)
+
+                            return "solicitud procesada"
+                        return "mensaje sin datos"
+                    return "titulo del mensaje no adecuado"
+                return "mensaje sin titulo"
+            return "mensaje sin atributos"
+        return "no hay mensaje disponible en la cola"
 
 
 # ----------------------------------------------------------------------------
