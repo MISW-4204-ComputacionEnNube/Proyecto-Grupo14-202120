@@ -24,6 +24,7 @@ from password_strength import PasswordPolicy
 import os
 import boto3
 import subprocess
+import random
 
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
 
@@ -172,8 +173,8 @@ class VistaMakeDataProof(Resource):
         # Send message to SQS queue
         response = sqs.send_message(
             QueueUrl=queue_url,
-            MessageGroupId='1',
-            MessageDeduplicationId='A',
+            MessageGroupId=str(int(random.randint(0, 1000000))),
+            MessageDeduplicationId=str(int(random.randint(0, 1000000))),
             MessageAttributes={
                 'Title': {
                     'DataType': 'String',
@@ -658,8 +659,8 @@ class VistaTareas(Resource):
             try:
                 response = sqs.send_message(
                     QueueUrl=queue_url,
-                    MessageGroupId='1',
-                    MessageDeduplicationId='A',
+                    MessageGroupId=str(int(random.randint(0, 1000000))),
+                    MessageDeduplicationId=str(int(random.randint(0, 1000000))),
                     MessageAttributes={
                         'Title': {
                             'DataType': 'String',
