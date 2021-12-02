@@ -105,7 +105,7 @@ then
         fin=`date '+%s'`
         dif=$((fin-inicio))
 
-        echo $counter $inicio $fin $dif >> /home/ubuntu/test_log/log_execution_pararell.log
+        # echo $counter $inicio $fin $dif >> /home/ubuntu/test_log/log_execution_pararell.log
     fi
 fi
 
