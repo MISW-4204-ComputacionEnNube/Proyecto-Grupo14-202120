@@ -44,6 +44,7 @@ apt update -y
 # instala los paquetes básicos
 apt install git python3-venv python3-pip python3-dev build-essential -y 
 apt install libssl-dev libffi-dev python3-setuptools nginx awscli ffmpeg -y
+apt install postgresql-client -y
 
 # +++++++++++++++++++++++++++++++++++​
 
