@@ -339,21 +339,21 @@ class VistaConvert(Resource):
             # 'UserId': {'StringValue': '1', 'DataType': 'Number'}}
             if 'MessageAttributes' in message.keys():
                 if 'Title' in message['MessageAttributes'].keys():
-                    if message['MessageAttributes']['Title'] == 'conversion':
+                    if message['MessageAttributes']['Title']['StringValue'] == 'conversion':
                         if 'TaskId' in message['MessageAttributes'].keys() and \
                             'RutaArchivoOrigen' in message['MessageAttributes'].keys() and \
                             'RutaArchivoDestino' in message['MessageAttributes'].keys():
 
-                            task_id = message['MessageAttributes']['TaskId']
-                            ruta_archivo_origen = message['MessageAttributes']['RutaArchivoOrigen']
-                            ruta_archivo_destino = message['MessageAttributes']['RutaArchivoDestino']
+                            task_id = message['MessageAttributes']['TaskId']['StringValue']
+                            ruta_archivo_origen = message['MessageAttributes']['RutaArchivoOrigen']['StringValue']
+                            ruta_archivo_destino = message['MessageAttributes']['RutaArchivoDestino']['StringValue']
 
                             # aumenta la variable en el sistema
                             num_proc = get_num_proc()
                             os.environ['num_proc'] = str(num_proc+1)
 
                             # ya con el archivo de manera local se dispara la conversion
-                            command = subprocess.Popen(["/bin/bash", script_conversion, task_id, 1, ruta_archivo_origen, ruta_archivo_destino, s3])
+                            command = subprocess.Popen(["/bin/bash", str(script_conversion), str(task_id), str(1), str(ruta_archivo_origen), str(ruta_archivo_destino), str(s3)])
                             command.communicate()
 
                             # disminuye la variable en el sistema
