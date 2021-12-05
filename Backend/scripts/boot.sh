@@ -21,7 +21,7 @@
 # ----------------------------------------------------------------------------
 
 # define las constantes usadas en el script
-user=`"$USER"`
+user=`echo $USER`
 group="www-data"
 pro_name="Proyecto-Grupo14-202120"
 proyecto="/home/$user/$pro_name"
