@@ -33,7 +33,7 @@ jobs:
       - name: Install boot.sh
         run: |
           cd Backend/scripts
-          bash boot.sh
+          sudo bash boot.sh
       - name: Run flask
         run: |
           cd Backend
