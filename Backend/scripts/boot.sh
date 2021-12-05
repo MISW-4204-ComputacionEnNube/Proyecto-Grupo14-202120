@@ -40,10 +40,11 @@ echo "Inicia la configuración instancia web "`date '+%Y%m%d%H%M%S'`
 # Preparar el sistema para la instalación de los servicios.
 # actualiza la lista de paquetes en el manejador de paquetes del 
 # sistema operativo​
-apt update -y
+
+apt-get update -y
 # instala los paquetes básicos
-apt install git python3-venv python3-pip python3-dev build-essential -y 
-apt install libssl-dev libffi-dev python3-setuptools nginx awscli ffmpeg -y
+apt-get install git python3-venv python3-pip python3-dev build-essential -y 
+apt-get install libssl-dev libffi-dev python3-setuptools nginx awscli ffmpeg -y
 
 # +++++++++++++++++++++++++++++++++++​
 
